@@ -1,0 +1,13 @@
+coverage
+detect-secrets==1.0.3
+myst-parser
+pre-commit
+pytest
+Sphinx
+numpy
+pandas
+imgkit
+convertbng
+pyprojroot
+peartree
+paramiko
