@@ -17,20 +17,12 @@ def main(feed_type: str, redo_all: bool):
         SFTP server
         redo_all -- flag, do you want to re-download all data available?
     """
-    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    logging.basicConfig(
-        level=logging.INFO,
-        format=log_fmt,
-        filename=os.path.join(os.getenv("DIR_LOG"), "process.log"),
-    )
     logger = logging.getLogger(__name__)
     logger.info(f"Fetching {feed_type}, reprocess all = {redo_all}")
 
-    paramiko.util.log_to_file(os.path.join(os.getenv("DIR_LOG"), "paramiko.log"))
-
     # Open a transport
     transport = paramiko.Transport(
-        (os.getenv("RAIL_FEED_HOST"), os.getenv("RAIL_FEED_PORT"))
+        (os.getenv("RAIL_FEED_HOST"), int(os.getenv("RAIL_FEED_PORT")))
     )
 
     # Authorise
@@ -47,12 +39,14 @@ def main(feed_type: str, redo_all: bool):
         # Download every file detected
         for file in remote_rail_files:
             sftp.get(
-                os.path.join(f"./{feed_type}", file), os.getenv("DIR_DATA_EXTERNAL")
+                os.path.join(f"./{feed_type}", file),
+                os.path.join(os.getenv("DIR_DATA_EXTERNAL"), file),
             )
         logger.info(f"Retrieved {len(remote_rail_files)} files")
 
     else:
         # Check what files already exist
+        logger.info("Checking for existing files")
         local_rail_files = [
             file
             for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL"))
@@ -61,29 +55,33 @@ def main(feed_type: str, redo_all: bool):
 
         # download anything new
         to_download = set(remote_rail_files).difference(local_rail_files)
-        if len(to_download) == 0:
+        if len(to_download) > 0:
+            for file in to_download:
+                sftp.get(
+                    os.path.join(f"./{feed_type}", file),
+                    os.path.join(os.getenv("DIR_DATA_EXTERNAL"), file),
+                )
+                logger.info(f"Retrieved {file}")
+            logger.info(f"Retrieved {len(to_download)} files")
+        else:
             logger.info(f"No new rail data files in feed {feed_type} detected")
-            return None
 
-        for file in to_download:
-            sftp.get(
-                os.path.join(f"./{feed_type}", file), os.getenv("DIR_DATA_EXTERNAL")
-            )
-
-        logger.info(f"Retrieved {len(to_download)} files")
+    # Shut down if left open
+    if sftp:
+        sftp.close()
+    if transport:
+        transport.close()
 
     return None
 
-    # # Download
-    # filepath = "/etc/passwd"
-    # localpath = "test.zip"
-    # sftp.get(filepath,localpath)
 
-    # # Upload
-    # filepath = "/home/foo.jpg"
-    # localpath = "/home/pony.jpg"
-    # sftp.put(localpath,filepath)
+if __name__ == "__main__":
+    # Configure logging
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(
+        level=logging.INFO,
+        format=log_fmt,
+        filename=os.path.join(os.getenv("DIR_LOG"), "process.log"),
+    )
 
-    # # Close
-    # if sftp: sftp.close()
-    # if transport: transport.close()
+    main()

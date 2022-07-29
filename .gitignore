@@ -130,6 +130,7 @@ dmypy.json
 
 # Project stuff
 .DS_Store
+.secrets
 *.html
 *.geojson
 *.zip
