@@ -21,6 +21,8 @@ brew install direnv   # Install (OSX) if not installed already
 direnv allow   # Allow direnv to make available project environment variables
 ```
 
+Note: you may need to add `eval "$(direnv hook zsh)"` to the ~/.zshrc file during an initial setup.
+
 ---
 
 You will need to create a .secrets file in the project root directory with
@@ -35,11 +37,32 @@ export RAIL_FEED_PORT=<DTD data feed port (usually 22, and not secret)>
 
 ### Run
 
-Currently only fetching rail data is fully implemented.  To run:
+#### Request ATOC Data
+First, need to request all recent ATOC data. To run:
 
 ```shell
 python src/fetch_feeds.py timetable
 ```
+
+#### Build Timetable
+Then, can build a timetable by running:
+```shell
+python src/build_timetable.py <zip_file_name>
+```
+
+Where `<zip_file_name>` is the name of the ATOC zip file to work on (include.zip file extension). This run command also has two optional parameters:
+
+* `--dump_date`, which is a string in DDMMYYYY format format corresponding to the day in which the ATOC zip file was "dumped". If this is not provided, the default assumption is the ATOC zip file was "dumped" on the current day of the run call.
+
+* `--date`, which is an int in YYMMDD format corresponding to the day in which the timetable will be filtered to/built.
+
+An example call using these optional parameters could be:
+
+```shell
+python src/build_timetable.py <zip_file_name> --dump_date 01082022 --date 220802
+```
+
+Which would use `<zip_file_name>`, take the ATOC data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
 
 A bash script allows for extraction and fixing of the downloaded file, to run:
 

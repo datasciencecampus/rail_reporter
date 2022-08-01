@@ -70,7 +70,7 @@ if __name__ == "__main__":
         level=logging.INFO,
         format=log_fmt,
         filename=os.path.join(
-            os.getenv("DIR_LOG"), f"process {str(datetime.now())}.log"
+            os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
     )
 
