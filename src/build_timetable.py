@@ -20,8 +20,8 @@ from utils import (
 @click.command()
 @click.argument("zip_name")
 @click.option("--dump_date", default=None, type=str)
-@click.option("--date", default=None, type=int)
-def main(zip_name: str, dump_date: str, date: int):
+@click.option("--date", default=None, type=str)
+def main(zip_name: str, dump_date: str, date: str):
     """
     Handles building and saving a timetable dataframe for a daily ATOC feed
 
@@ -46,6 +46,9 @@ def main(zip_name: str, dump_date: str, date: int):
             f"Setting `date` to {date} (today) automatically since the"
             "optional argument was not set."
         )
+    else:
+        # change the format of the input to required format
+        date = int(datetime.strptime(str(date), "%d%m%Y").strftime("%y%m%d"))
 
     # calculate the day from `date`
     day = datetime.strptime(str(date), "%y%m%d").strftime("%A")

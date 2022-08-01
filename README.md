@@ -54,12 +54,12 @@ Where `<zip_file_name>` is the name of the ATOC zip file to work on (include.zip
 
 * `--dump_date`, which is a string in DDMMYYYY format format corresponding to the day in which the ATOC zip file was "dumped". If this is not provided, the default assumption is the ATOC zip file was "dumped" on the current day of the run call.
 
-* `--date`, which is an int in YYMMDD format corresponding to the day in which the timetable will be filtered to/built.
+* `--date`, which is a string in DDMMYYY format corresponding to the day in which the timetable will be filtered to/built. Note, the conversion to the ATOC format (YYMMDD) is handled during the call.
 
 An example call using these optional parameters could be:
 
 ```shell
-python src/build_timetable.py <zip_file_name> --dump_date 01082022 --date 220802
+python src/build_timetable.py <zip_file_name> --dump_date 01082022 --date 02082022
 ```
 
 Which would use `<zip_file_name>`, take the ATOC data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
