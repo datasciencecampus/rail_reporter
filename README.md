@@ -17,6 +17,7 @@ source env/bin/activate
 python -m pip install --upgrade pip       # Install packages
 python -m pip install -r requirements.txt
 
+brew install direnv   # Install (OSX) if not installed already
 direnv allow   # Allow direnv to make available project environment variables
 ```
 
