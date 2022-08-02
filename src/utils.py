@@ -88,7 +88,7 @@ def create_perm_and_new_df(timetable):
             if spec_line[:2] == "LO":
                 tiploc = spec_line[2:].split(" ")[0]
                 station_stop += 1
-                time = spec_line[10:14]
+                time = spec_line[15:19]
                 tiploc_type = "S"  # station
                 ind_movts.append(
                     [
@@ -114,7 +114,7 @@ def create_perm_and_new_df(timetable):
             elif spec_line[:2] == "LT":
                 tiploc = spec_line[2:].split(" ")[0]
                 station_stop += 1
-                time = spec_line[10:14]
+                time = spec_line[15:19]
                 tiploc_type = "S"  # station
                 ind_movts.append(
                     [
@@ -142,7 +142,7 @@ def create_perm_and_new_df(timetable):
 
                 # times for stations and junctions (slightly different format)
                 if spec_line[10] != " ":
-                    time = spec_line[10:14]
+                    time = spec_line[15:19]
                     tiploc_type = "S"  # station
                     station_stop += 1
                 else:

@@ -78,9 +78,12 @@ def main(zip_name: str, dump_date: str, date: str):
     # filter journey data and cancellation data
     logger.info("Creating calendar and cancelled dataframes... (~30s)")
     calendar_df, cancelled_df = create_perm_and_new_df(df)
-    logger.info("Created calendar and cancelled dataframes.")
 
-    logger.info(f"Filtering to {date}")
+    # include only rows for actual station stops i.e. not flybys
+    calendar_df = calendar_df[calendar_df["TIPLOC_type"] != "F"]
+    logger.info("Created calendar and cancelled dataframes and removed flybys.")
+
+    logger.info(f"Filtering to {date}...")
     cal_today = filter_to_date_and_time(calendar_df, date, day)
     canc_today = filter_to_date_and_time(cancelled_df, date, day)
 
