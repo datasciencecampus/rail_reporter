@@ -37,7 +37,7 @@ def main(feed_type: str):
     logger.info("Checking for existing files")
     local_rail_files = [
         file
-        for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL"))
+        for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
         if file.endswith(".zip")
     ]
 
@@ -47,7 +47,7 @@ def main(feed_type: str):
         for file in to_download:
             sftp.get(
                 os.path.join(f"./{feed_type}", file),
-                os.path.join(os.getenv("DIR_DATA_EXTERNAL"), file),
+                os.path.join(os.getenv("DIR_DATA_EXTERNAL_ATOC"), file),
             )
             logger.info(f"Retrieved {file}")
         logger.info(f"Retrieved {len(to_download)} files")
