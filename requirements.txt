@@ -11,3 +11,5 @@ convertbng
 pyprojroot
 peartree
 paramiko
+click
+yagmail
