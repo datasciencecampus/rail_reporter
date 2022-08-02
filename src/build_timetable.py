@@ -23,11 +23,17 @@ from utils import (
 @click.option("--date", default=None, type=str)
 def main(zip_name: str, dump_date: str, date: str):
     """
-    Handles building and saving a timetable dataframe for a daily ATOC feed
+    Handles building and saving timetable data for a daily ATOC feed
 
     Parameters
     ----------
-
+    zip_name : str
+        Name of the ATOC zip file to build off (with .zip file extension).
+    dump_date : str
+        Date string corresponding to the date the ATOC zip file was "dumped"
+        in DDMMYYYY format.
+    date : str
+        Date string to filter ATOC data to in DDMMYYYY format.
     """
     logger = logging.getLogger(__name__)
 
