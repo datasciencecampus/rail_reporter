@@ -11,3 +11,4 @@ convertbng
 pyprojroot
 peartree
 paramiko
+folium

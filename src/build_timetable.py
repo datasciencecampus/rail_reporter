@@ -1,7 +1,7 @@
 import logging
 import os
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import click
 import pandas as pd
@@ -20,8 +20,9 @@ from utils import (
 @click.command()
 @click.argument("zip_name")
 @click.option("--dump_date", default=None, type=str)
-@click.option("--date", default=None, type=str)
-def main(zip_name: str, dump_date: str, date: str):
+@click.option("--start_date", default=None, type=str)
+@click.option("--increment_days", default=3, type=int)
+def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     """
     Handles building and saving timetable data for a daily ATOC feed
 
@@ -45,111 +46,144 @@ def main(zip_name: str, dump_date: str, date: str):
             " since the optional argument was not set."
         )
 
-    # set to today is no date is provided
-    if date is None:
-        date = int(datetime.now().date().strftime("%y%m%d"))
+    if start_date is None:
+        start_date = datetime.now().date()
         logger.info(
-            f"Setting `date` to {date} (today) automatically since the"
+            f"Setting `start_date` to {start_date} (today) automatically since the"
             "optional argument was not set."
         )
     else:
-        # change the format of the input to required format
-        date = int(datetime.strptime(str(date), "%d%m%Y").strftime("%y%m%d"))
+        start_date = datetime.strptime(start_date, "%d%m%Y").date()
 
-    # calculate the day from `date`
-    day = datetime.strptime(str(date), "%y%m%d").strftime("%A")
-
+    # print inputs to logger for records
     logger.info(
         f'Using inputs ATOC zip:"{zip_name}", dump_date:"{dump_date}",'
-        f' date:{date}, day:"{day}".'
+        f' start_date:{start_date}, increment_days:"{increment_days}".'
     )
+
+    # build a list of days to run over
+    dates = []
+    for i in range(0, increment_days):
+        dates.append(start_date + timedelta(days=i))
+    logger.info(f"Days to analyse = {dates}")
 
     external_folder_path = os.path.join(here(), "data", "external")
     outputs_folder_path = os.path.join(here(), "output")
+
+    # retrieve station tiplocs
+    tiploc_filepath = os.path.join(here(), "data", "external", "geography", "Stops.csv")
+    station_tiplocs = find_station_tiplocs(tiploc_filepath)
+    logger.info("Tiplocs retrieved from Stops.csv/tiploc file...")
 
     # unpack the atoc data
     unpack_atoc_data(external_folder_path, zip_name, dump_date)
     logger.info(f'"{zip_name}" unziped.')
 
-    # remove header rows (non-timetable data)
-    df = cut_mca_to_size(external_folder_path, zip_name.replace(".zip", ""), dump_date)
-    logger.info("MCA cut to size.")
+    for run_num, date_datetime in enumerate(dates):
 
-    # filter journey data and cancellation data
-    logger.info("Creating calendar and cancelled dataframes... (~30s)")
-    calendar_df, cancelled_df = create_perm_and_new_df(df)
+        # get the date in the required int format
+        date = int(date_datetime.strftime("%y%m%d"))
 
-    # include only rows for actual station stops i.e. not flybys
-    calendar_df = calendar_df[calendar_df["TIPLOC_type"] != "F"]
-    logger.info("Created calendar and cancelled dataframes and removed flybys.")
+        # calculate the day from `date`
+        day = datetime.strptime(str(date), "%y%m%d").strftime("%A")
 
-    logger.info(f"Filtering to {date}...")
-    cal_today = filter_to_date_and_time(calendar_df, date, day)
-    canc_today = filter_to_date_and_time(cancelled_df, date, day)
+        logger.info(f"*** Running with date: {date}, day: {day} ***")
 
-    # filter permanent timetabled journeys attributed to this date
-    # (i.e. before any cancellations or exceptions)
-    timetabled = (
-        cal_today["TIPLOC"][cal_today["Flag"] == "P"].value_counts().reset_index()
+        # remove header rows (non-timetable data)
+        df = cut_mca_to_size(
+            external_folder_path, zip_name.replace(".zip", ""), dump_date
+        )
+        logger.info("MCA cut to size.")
+
+        # filter journey data and cancellation data
+        logger.info("Creating calendar and cancelled dataframes... (~30s)")
+        calendar_df, cancelled_df = create_perm_and_new_df(df)
+
+        # include only rows for actual station stops i.e. not flybys
+        calendar_df = calendar_df[calendar_df["TIPLOC_type"] != "F"]
+        logger.info("Created calendar and cancelled dataframes and removed flybys.")
+
+        logger.info(f"Filtering to {date}...")
+        cal_today = filter_to_date_and_time(calendar_df, date, day)
+        canc_today = filter_to_date_and_time(cancelled_df, date, day)
+
+        # filter permanent timetabled journeys attributed to this date
+        # (i.e. before any cancellations or exceptions)
+        timetabled = (
+            cal_today["TIPLOC"][cal_today["Flag"] == "P"].value_counts().reset_index()
+        )
+        timetabled.columns = ["TIPLOC", "journeys_timetabled"]
+        timetabled["journeys_timetabled"] = timetabled["journeys_timetabled"].astype(
+            "int"
+        )
+
+        # split journeys into categories
+        perm_new_today = cal_today[cal_today["Flag"].isin(["P", "N"])]
+        overlays_today = cal_today[cal_today["Flag"] == "O"]
+
+        # list affected journeys
+        overlays_today_list = overlays_today["Identifier"].unique()
+        cancellations_today_list = canc_today["Identifier"].unique()
+
+        # filter out journeys cancelled or amended
+        today_amended = perm_new_today[
+            (~perm_new_today["Identifier"].isin(cancellations_today_list))
+        ]
+        today_amended = today_amended[
+            (~today_amended["Identifier"].isin(overlays_today_list))
+        ]
+        logger.info("Removed cancelled journeys and added exceptions.")
+
+        # add in overlayed exceptions in place of some journeys
+        final_df = pd.concat([today_amended, overlays_today])
+        logger.info("`final_df` built.")
+
+        # filter to show only rail station TIPLOCs
+        stations_df = final_df[
+            final_df["TIPLOC"].isin(list(station_tiplocs["TIPLOC"].unique()))
+        ]
+        final_df = stations_df.merge(
+            station_tiplocs[["TIPLOC", "Station_Name", "Latitude", "Longitude"]],
+            on="TIPLOC",
+            how="inner",
+        )
+        # final_df.to_csv(os.path.join(
+        # outputs_folder_path, f"full_uk_schedule_{date}.csv"))
+        logger.info(f"Full schedule for {date} built")
+
+        scheduled = final_df["TIPLOC"].value_counts().reset_index()
+        scheduled.columns = ["TIPLOC", "journeys_scheduled"]
+
+        merged = pd.merge(scheduled, timetabled, on="TIPLOC", how="left")
+        merged["pct_timetabled_services_running"] = np.round(
+            merged["journeys_scheduled"] / merged["journeys_timetabled"] * 100, 2
+        )
+        merged.sort_values("journeys_timetabled", ascending=False, inplace=True)
+        output = merged.merge(
+            station_tiplocs[["TIPLOC", "Station_Name", "Latitude", "Longitude"]],
+            on="TIPLOC",
+            how="inner",
+        )
+
+        # add date to output
+        output.loc[:, "date"] = datetime.strftime(date_datetime, "%Y-%m-%d")
+
+        logger.info(f"Full disruption summary for {date}.")
+
+        if run_num == 0:
+            out_df = output.copy()
+            logger.info(f"Run number {run_num}: Creating out_df")
+        else:
+            out_df = pd.concat([out_df, output], ignore_index=True)
+            logger.info(f"Run number {run_num}: Concated output onto out_df")
+
+    logger.info("Exporting out_df...")
+    output_file_name = (
+        f"full_uk_disruption_summary_multiday_start_"
+        f'{str(start_date).replace("-","")}_{increment_days}days.csv'
     )
-    timetabled.columns = ["TIPLOC", "journeys_timetabled"]
-    timetabled["journeys_timetabled"] = timetabled["journeys_timetabled"].astype("int")
-
-    # split journeys into categories
-    perm_new_today = cal_today[cal_today["Flag"].isin(["P", "N"])]
-    overlays_today = cal_today[cal_today["Flag"] == "O"]
-
-    # list affected journeys
-    overlays_today_list = overlays_today["Identifier"].unique()
-    cancellations_today_list = canc_today["Identifier"].unique()
-
-    # filter out journeys cancelled or amended
-    today_amended = perm_new_today[
-        (~perm_new_today["Identifier"].isin(cancellations_today_list))
-    ]
-    today_amended = today_amended[
-        (~today_amended["Identifier"].isin(overlays_today_list))
-    ]
-    logger.info("Removed cancelled journeys and added exceptions.")
-
-    # add in overlayed exceptions in place of some journeys
-    final_df = pd.concat([today_amended, overlays_today])
-    logger.info("`final_df` built.")
-
-    # retrieve station tiplocs
-    tiploc_filepath = os.path.join(here(), "data", "external", "geography", "Stops.csv")
-    logger.info("Opening Stops.csv/tiploc file...")
-    station_tiplocs = find_station_tiplocs(tiploc_filepath)
-
-    # filter to show only rail station TIPLOCs
-    stations_df = final_df[
-        final_df["TIPLOC"].isin(list(station_tiplocs["TIPLOC"].unique()))
-    ]
-    final_df = stations_df.merge(
-        station_tiplocs[["TIPLOC", "Station_Name", "Latitude", "Longitude"]],
-        on="TIPLOC",
-        how="inner",
-    )
-    final_df.to_csv(os.path.join(outputs_folder_path, f"full_uk_schedule_{date}.csv"))
-    logger.info(f"Full schedule for {date} exported to {outputs_folder_path}")
-
-    scheduled = final_df["TIPLOC"].value_counts().reset_index()
-    scheduled.columns = ["TIPLOC", "journeys_scheduled"]
-
-    merged = pd.merge(scheduled, timetabled, on="TIPLOC", how="left")
-    merged["pct_timetabled_services_running"] = np.round(
-        merged["journeys_scheduled"] / merged["journeys_timetabled"] * 100, 2
-    )
-    merged.sort_values("journeys_timetabled", ascending=False, inplace=True)
-    output = merged.merge(
-        station_tiplocs[["TIPLOC", "Station_Name", "Latitude", "Longitude"]],
-        on="TIPLOC",
-        how="inner",
-    )
-    output.to_csv(
-        os.path.join(outputs_folder_path, f"full_uk_disruption_summary_{date}.csv")
-    )
-    logger.info(f"Full disruption summary for {date} exported to {outputs_folder_path}")
+    out_df.to_csv(os.path.join(outputs_folder_path, output_file_name))
+    logger.info(f"out_df exported to {outputs_folder_path}/{output_file_name}")
 
     # tidyup - remove unzipped atoc folder
     shutil.rmtree(os.path.join(external_folder_path, "atoc", f"atoc_{dump_date}"))
@@ -167,7 +201,7 @@ if __name__ == "__main__":
         filename=os.path.join(
             os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
-        filemode="a",
+        filemode="w",
     )
 
     main()
