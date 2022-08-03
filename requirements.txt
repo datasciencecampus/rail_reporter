@@ -12,3 +12,5 @@ pyprojroot
 peartree
 paramiko
 folium
+pillow
+pybase64

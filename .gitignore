@@ -142,3 +142,7 @@ data/external/geography/*
 
 # output foler
 output/*
+
+# images
+src/images/*
+output/images/*
