@@ -134,4 +134,4 @@ dmypy.json
 *.html
 *.geojson
 *.zip
-credentials.json
+credential*.json
