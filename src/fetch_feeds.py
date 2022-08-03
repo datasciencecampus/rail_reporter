@@ -8,7 +8,7 @@ from datetime import datetime
 
 @click.command()
 @click.argument("feed_type")
-def main(feed_type: str):
+def fetch_feeds(feed_type: str):
     """
     Handles connecting to DTD SFTP rail data feed, and fetching latest, or all
     available.
@@ -74,4 +74,4 @@ if __name__ == "__main__":
         ),
     )
 
-    main()
+    fetch_feeds()

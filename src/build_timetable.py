@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import click
 import pandas as pd
 import numpy as np
-from pyprojroot import here
 
 from utils import (
     create_perm_and_new_df,
@@ -23,7 +22,9 @@ from utils import (
 @click.option("--dump_date", default=None, type=str)
 @click.option("--start_date", default=None, type=str)
 @click.option("--increment_days", default=3, type=int)
-def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
+def build_timetable(
+    zip_name: str, dump_date: str, start_date: str, increment_days: int
+):
     """
     Handles building and saving timetable data for a daily ATOC feed
 
@@ -68,14 +69,14 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         dates.append(start_date + timedelta(days=i))
     logger.info(f"Days to analyse = {dates}")
 
-    external_folder_path = os.path.join(here(), "data", "external")
-    atoc_folder_path = os.path.join(here(), "data", "external", "atoc")
-    outputs_folder_path = os.path.join(here(), "outputs")
+    external_folder_path = os.getenv("DIR_DATA_EXTERNAL")
+    atoc_folder_path = os.getenv("DIR_DATA_EXTERNAL_ATOC")
+    outputs_folder_path = os.getenv("DIR_OUTPUTS")
 
     # Download file if not already exists
     download_big_file(os.getenv("URL_STOPS"), "Stops.csv", external_folder_path)
     station_tiplocs = find_station_tiplocs(
-        os.path.join(here(), "data", "external", "Stops.csv")
+        os.path.join(external_folder_path, "Stops.csv")
     )
     logger.info("Tiplocs retrieved from Stops.csv/tiploc file...")
 
@@ -203,7 +204,6 @@ if __name__ == "__main__":
         filename=os.path.join(
             os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
-        filemode="w",
     )
 
-    main()
+    build_timetable()

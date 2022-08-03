@@ -60,12 +60,13 @@ def download_big_file(
     return None
 
 
-def breakout_filenames(filename: str):
+def breakout_DTD_filename(filename: str):
     """Pulls metadata out of a DTD rail data filename"""
     return {
         "name": filename,
-        "number": re.sub(r"[^0-9]", "", filename),
-        "type": re.sub(r"[^A-Z]", "", filename),
+        "number": int(re.sub(r"[^0-9]", "", filename.split(".")[0])),
+        "type": re.sub(r"[^A-Z]", "", filename.split(".")[0]),
+        "extension": filename.split(".")[1],
     }
 
 
