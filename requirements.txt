@@ -13,3 +13,4 @@ peartree
 paramiko
 click
 yagmail
+folium

@@ -135,3 +135,7 @@ dmypy.json
 *.geojson
 *.zip
 credential*.json
+# atoc data
+data/external/atoc/*
+data/external/geography/*
+output/*
