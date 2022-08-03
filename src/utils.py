@@ -1,9 +1,63 @@
 import os
 import re
-from zipfile import ZipFile
+import requests
 
 import pandas as pd
+
+from zipfile import ZipFile
 from convertbng.util import convert_lonlat
+
+
+def request_with_fails(url, savepath):
+    """
+    Returns the content of a request to a url, and raises errors on any failure
+    including HTTP fail status codes.
+    Use case:  Downloading large files from a URL.
+    Arguments:
+        url -- to send request to.
+        savepath -- to write out to.
+    """
+    try:
+        with requests.get(url, stream=True, allow_redirects=True) as r:
+            # Raises an error for any status code except 400
+            r.raise_for_status()
+            with open(savepath, "wb") as f:
+                for chunk in r.iter_content(chunk_size=1024 * 8):
+                    if chunk:
+                        f.write(chunk)
+                        f.flush()
+                        os.fsync(f.fileno())
+
+    except Exception as e:
+        raise e
+
+
+def download_big_file(
+    source_url: str, file_name: str, save_dir: str = os.getenv("DIR_DATA_RAW")
+):
+    """
+    Handles downloading large files using the request library's streaming
+    capability.  Needed because of issues with programatically retrieving large
+    files from ONS Open Geography Portal.
+    Arguments:
+        source_url -- str:  Link to file to download
+        file_name -- str: Name to save download under
+        save_dir -- str: Location to save file, does not have to exist,
+        defaults to os.getenv("DIR_DATA_RAW)
+    Returns:
+        None
+    """
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    file_path = os.path.join(save_dir, file_name)
+
+    if not os.path.exists(file_path):
+        request_with_fails(source_url, file_path)
+
+    else:
+        print(f"File {file_path} exists, will not re-download")
+    return None
 
 
 def breakout_filenames(filename: str):
@@ -18,15 +72,14 @@ def breakout_filenames(filename: str):
 def unpack_atoc_data(folder_path, zip_name, dump_date):
     """Unpacks atoc zip file"""
 
-    with ZipFile(os.path.join(folder_path, "atoc", zip_name), "r") as zip:
-        zip.extractall(os.path.join(folder_path, "atoc", f"atoc_{dump_date}"))
+    with ZipFile(os.path.join(folder_path, zip_name), "r") as zip:
+        zip.extractall(os.path.join(folder_path, f"atoc_{dump_date}"))
 
 
 def cut_mca_to_size(folder_path, zip_name, dump_date):
 
-    mca_file_path = os.path.join(
-        folder_path, "atoc", f"atoc_{dump_date}", f"{zip_name}.MCA"
-    )
+    mca_file_name = zip_name.strip(".ZIP") + ".MCA"
+    mca_file_path = os.path.join(folder_path, f"atoc_{dump_date}", mca_file_name)
 
     with open(mca_file_path, "r") as f:
         lines = f.readlines()

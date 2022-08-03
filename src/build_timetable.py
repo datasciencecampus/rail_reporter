@@ -14,6 +14,7 @@ from utils import (
     filter_to_date_and_time,
     find_station_tiplocs,
     unpack_atoc_data,
+    download_big_file,
 )
 
 
@@ -68,15 +69,18 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     logger.info(f"Days to analyse = {dates}")
 
     external_folder_path = os.path.join(here(), "data", "external")
-    outputs_folder_path = os.path.join(here(), "output")
+    atoc_folder_path = os.path.join(here(), "data", "external", "atoc")
+    outputs_folder_path = os.path.join(here(), "outputs")
 
-    # retrieve station tiplocs
-    tiploc_filepath = os.path.join(here(), "data", "external", "geography", "Stops.csv")
-    station_tiplocs = find_station_tiplocs(tiploc_filepath)
+    # Download file if not already exists
+    download_big_file(os.getenv("URL_STOPS"), "Stops.csv", external_folder_path)
+    station_tiplocs = find_station_tiplocs(
+        os.path.join(here(), "data", "external", "Stops.csv")
+    )
     logger.info("Tiplocs retrieved from Stops.csv/tiploc file...")
 
     # unpack the atoc data
-    unpack_atoc_data(external_folder_path, zip_name, dump_date)
+    unpack_atoc_data(atoc_folder_path, zip_name, dump_date)
     logger.info(f'"{zip_name}" unziped.')
 
     for run_num, date_datetime in enumerate(dates):
@@ -90,9 +94,7 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         logger.info(f"*** Running with date: {date}, day: {day} ***")
 
         # remove header rows (non-timetable data)
-        df = cut_mca_to_size(
-            external_folder_path, zip_name.replace(".zip", ""), dump_date
-        )
+        df = cut_mca_to_size(atoc_folder_path, zip_name.replace(".zip", ""), dump_date)
         logger.info("MCA cut to size.")
 
         # filter journey data and cancellation data
@@ -186,7 +188,7 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     logger.info(f"out_df exported to {outputs_folder_path}/{output_file_name}")
 
     # tidyup - remove unzipped atoc folder
-    shutil.rmtree(os.path.join(external_folder_path, "atoc", f"atoc_{dump_date}"))
+    shutil.rmtree(os.path.join(atoc_folder_path, f"atoc_{dump_date}"))
     logger.info(f"Tidy up: removed atoc_{dump_date} folder.")
 
     return None
