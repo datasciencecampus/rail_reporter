@@ -8,13 +8,15 @@ from datetime import datetime
 
 @click.command()
 @click.argument("feed_type")
-def main(feed_type: str):
+@click.argument("data_directory")
+def main(feed_type: str, data_directory: str):
     """
     Handles connecting to DTD SFTP rail data feed, and fetching latest, or all
     available.
 
     Arguments:
         feed_type -- Name of feed/directory to download from, on SFTP server
+        data_directory -- Directory to save files to (must already exist)
     """
     logger = logging.getLogger(__name__)
     logger.info(f"Fetching {feed_type}")
@@ -36,9 +38,7 @@ def main(feed_type: str):
     # Check what files already exist
     logger.info("Checking for existing files")
     local_rail_files = [
-        file
-        for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
-        if file.endswith(".ZIP")
+        file for file in os.listdir(data_directory) if file.endswith(".ZIP")
     ]
 
     # download anything new
@@ -48,7 +48,7 @@ def main(feed_type: str):
         for file in to_download:
             sftp.get(
                 os.path.join(f"./{feed_type}", file),
-                os.path.join(os.getenv("DIR_DATA_EXTERNAL_ATOC"), file),
+                os.path.join(data_directory, file),
             )
             logger.info(f"Retrieved {file}")
         logger.info(f"Retrieved {len(to_download)} files")

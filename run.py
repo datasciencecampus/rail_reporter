@@ -10,6 +10,7 @@ from src.automail import email_rail_report
 
 LOG_DIR = os.getenv("DIR_LOG")
 ATOC_DIR = os.getenv("DIR_DATA_EXTERNAL_ATOC")
+OUT_DIR = os.getenv("DIR_OUTPUTS")
 
 
 def main():
@@ -18,7 +19,7 @@ def main():
     logger.info("Running full process")
 
     # Fetch latest files
-    os.system("python ./src/fetch_feeds.py timetable")
+    os.system(f"python ./src/fetch_feeds.py timetable {ATOC_DIR}")
 
     if not bool(os.getenv("NEW_FEED")):
         logger.info("No new feed data has been found, reporting and exiting.")
@@ -45,7 +46,10 @@ def main():
     logger.info(f"Latest file: {latest['name']}")
 
     # Produce statistics from that file
-    os.system(f"python ./src/build_timetable.py {latest['name']} --increment_days 3")
+    os.system(
+        "python ./src/build_timetable.py "
+        + f"{latest['name']} {ATOC_DIR} {OUT_DIR} --increment_days 3"
+    )
 
     # Bundle outputs to zip, selecting all csv's, html's dated today
     out_files = [

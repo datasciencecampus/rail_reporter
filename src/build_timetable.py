@@ -20,10 +20,19 @@ from utils import (
 
 @click.command()
 @click.argument("zip_name")
+@click.argument("data_directory")
+@click.argument("output_directory")
 @click.option("--dump_date", default=None, type=str)
 @click.option("--start_date", default=None, type=str)
 @click.option("--increment_days", default=30, type=int)
-def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
+def main(
+    zip_name: str,
+    data_directory: str,
+    output_directory: str,
+    dump_date: str,
+    start_date: str,
+    increment_days: int,
+):
     """
     Handles building and saving timetable data for a daily ATOC feed
 
@@ -68,23 +77,17 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         dates.append(start_date + timedelta(days=i))
     logger.info(f"Days to analyse = {dates}")
 
-    external_folder_path = os.getenv("DIR_DATA_EXTERNAL")
-    atoc_folder_path = os.getenv("DIR_DATA_EXTERNAL_ATOC")
-    outputs_folder_path = os.getenv("DIR_OUTPUTS")
-
     # Download file if not already exists
-    download_big_file(os.getenv("URL_STOPS"), "Stops.csv", external_folder_path)
-    station_tiplocs = find_station_tiplocs(
-        os.path.join(external_folder_path, "Stops.csv")
-    )
+    download_big_file(os.getenv("URL_STOPS"), "Stops.csv", data_directory)
+    station_tiplocs = find_station_tiplocs(os.path.join(data_directory, "Stops.csv"))
     logger.info("Tiplocs retrieved from Stops.csv/tiploc file...")
 
     # unpack the atoc data
-    unpack_atoc_data(atoc_folder_path, zip_name, dump_date)
+    unpack_atoc_data(data_directory, zip_name, dump_date)
     logger.info(f'"{zip_name}" unziped.')
 
     # remove header rows (non-timetable data)
-    df = cut_mca_to_size(atoc_folder_path, zip_name.replace(".zip", ""), dump_date)
+    df = cut_mca_to_size(data_directory, zip_name.replace(".zip", ""), dump_date)
     logger.info("MCA cut to size.")
 
     # filter journey data and cancellation data
@@ -152,8 +155,6 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
             on="TIPLOC",
             how="inner",
         )
-        # final_df.to_csv(os.path.join(
-        # outputs_folder_path, f"full_uk_schedule_{date}.csv"))
         logger.info(f"Full schedule for {date} built")
 
         scheduled = final_df["TIPLOC"].value_counts().reset_index()
@@ -187,11 +188,11 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         f"full_uk_disruption_summary_multiday_start_"
         f'{str(start_date).replace("-","")}_{increment_days}days.csv'
     )
-    out_df.to_csv(os.path.join(outputs_folder_path, output_file_name))
-    logger.info(f"out_df exported to {outputs_folder_path}/{output_file_name}")
+    out_df.to_csv(os.path.join(output_directory, output_file_name))
+    logger.info(f"out_df exported to {output_directory}/{output_file_name}")
 
     # tidyup - remove unzipped atoc folder
-    shutil.rmtree(os.path.join(atoc_folder_path, f"atoc_{dump_date}"))
+    shutil.rmtree(os.path.join(data_directory, f"atoc_{dump_date}"))
     logger.info(f"Tidy up: removed atoc_{dump_date} folder.")
 
     return None
