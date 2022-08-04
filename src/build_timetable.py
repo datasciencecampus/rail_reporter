@@ -24,8 +24,8 @@ from utils import (
 @click.option("--zip_name", default=None, type=str)
 @click.option("--dump_date", default=None, type=str)
 @click.option("--start_date", default=None, type=str)
-@click.option("--increment_days", default=30, type=int)
-def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
+@click.option("--no_days", default=30, type=int)
+def main(zip_name: str, dump_date: str, start_date: str, no_days: int):
     """
     Handles building and saving timetable data for a daily ATOC feed
 
@@ -70,12 +70,12 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     # print inputs to logger for records
     logger.info(
         f'Using inputs ATOC zip:"{zip_name}", dump_date:"{dump_date}",'
-        f" start_date:{start_date}, increment_days:{increment_days}."
+        f" start_date:{start_date}, no_days:{no_days}."
     )
 
     # build a list of days to run over
     dates = []
-    for i in range(0, increment_days):
+    for i in range(0, no_days):
         dates.append(start_date + timedelta(days=i))
     logger.info(f"Days to analyse = {dates}")
 
@@ -198,7 +198,7 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     logger.info("Exporting out_df...")
     output_file_name = (
         f"full_uk_disruption_summary_multiday_start_"
-        f'{str(start_date).replace("-","")}_{increment_days}days.csv'
+        f'{str(start_date).replace("-","")}_{no_days}days.csv'
     )
 
     # create a dedicated folder inside the outputs dir
