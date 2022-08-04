@@ -110,3 +110,13 @@ chmod u+x src/clean_railfeed_zip.sh
 # Where xxx is the file number in the file name
 ./src/clean_railfeed_zip.sh -d ./data/external -f RJTTFxxx
 ```
+
+## Shopping List
+
+- automail to run as independent script if required
+- build_timetable simplified, to take minimal arguments for input and output files/dirs
+- fetch_feeds.py to take minimal arguments for input and output files/dirs
+- ultimately only run.py should be spamming os.getenv (one place to change, reduce repetition)
+- end-to-end tests
+- unit tests for functions in utils
+- email alerts to the team when something messes up
