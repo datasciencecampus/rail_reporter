@@ -8,7 +8,7 @@ from datetime import datetime
 
 @click.command()
 @click.argument("feed_type")
-def fetch_feeds(feed_type: str):
+def main(feed_type: str):
     """
     Handles connecting to DTD SFTP rail data feed, and fetching latest, or all
     available.
@@ -38,11 +38,12 @@ def fetch_feeds(feed_type: str):
     local_rail_files = [
         file
         for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
-        if file.endswith(".zip")
+        if file.endswith(".ZIP")
     ]
 
     # download anything new
     to_download = set(remote_rail_files).difference(local_rail_files)
+
     if len(to_download) > 0:
         for file in to_download:
             sftp.get(
@@ -51,8 +52,6 @@ def fetch_feeds(feed_type: str):
             )
             logger.info(f"Retrieved {file}")
         logger.info(f"Retrieved {len(to_download)} files")
-    else:
-        logger.info(f"No new rail data files in feed {feed_type} detected")
 
     # Shut down if left open
     if sftp:
@@ -60,7 +59,15 @@ def fetch_feeds(feed_type: str):
     if transport:
         transport.close()
 
-    return None
+    # Return what happened
+    if len(to_download) > 0:
+        # Report via environment variable
+        os.system("export NEW_FEED=True")
+        return True
+    else:
+        logger.info(f"No new rail data files in feed {feed_type} detected")
+        os.system("export NEW_FEED=False")
+        return False
 
 
 if __name__ == "__main__":
@@ -74,4 +81,4 @@ if __name__ == "__main__":
         ),
     )
 
-    fetch_feeds()
+    main()

@@ -40,7 +40,9 @@ def yag_send(
     return None
 
 
-def email_rail_report(attachment_filepaths: list[str] = None) -> None:
+def email_rail_report(
+    content: str = None, attachment_filepaths: list[str] = None
+) -> None:
     """
     Wraps process for reporting rail network statistics (specificity is due to
     environment variables loaded and messages created).
@@ -63,13 +65,15 @@ def email_rail_report(attachment_filepaths: list[str] = None) -> None:
     )
 
     logger.info(f"To send: {subject}")
-    logger.info(f"Attachments: {', '.join(attachment_filepaths)}")
+    if attachment_filepaths:
+        logger.info(f"Attachments: {', '.join(attachment_filepaths)}")
 
     # Content is simple
-    content = (
-        "Please find attached latest rail network status statistics, "
-        + "if you're seeing this the pipeline so far runs manually"
-    )
+    if not content:
+        content = (
+            "Please find attached latest rail network status statistics, "
+            + "if you're seeing this the pipeline so far runs manually"
+        )
 
     oauth2_file = "credentials.json"  # This is secret/protected
 

@@ -20,6 +20,16 @@ def main():
     # Fetch latest files
     os.system("python ./src/fetch_feeds.py timetable")
 
+    if not bool(os.getenv("NEW_FEED")):
+        logger.info("No new feed data has been found, reporting and exiting.")
+        content = (
+            "No new feed data detected this morning, "
+            + "this may be a temporary delay in the data source, "
+            + "we will try again this afternoon."
+        )
+        email_rail_report(content=content)
+        return None
+
     # Find all ATOC zips for FULL data
     files = [
         breakout_DTD_filename(file)
@@ -61,7 +71,9 @@ def main():
     )
 
     # Mail the zip file to the recipient list configured in .secrets
-    email_rail_report([os.path.join(os.getenv("DIR_OUTPUTS"), archive_name)])
+    email_rail_report(
+        attachment_filepaths=[os.path.join(os.getenv("DIR_OUTPUTS"), archive_name)]
+    )
 
 
 if __name__ == "__main__":
