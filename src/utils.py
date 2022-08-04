@@ -1,5 +1,6 @@
 import os
 import re
+import glob
 import requests
 import calendar
 
@@ -396,3 +397,15 @@ def filter_to_dft_time(
     small_journeys = today_rows_df[today_rows_df["Identifier"].isin(small_start)]
 
     return pd.concat([core_journeys, small_journeys])
+
+
+def get_most_recent_file(folder_path: str, file_type: str = r"/*ZIP"):
+
+    # retrieve list of files matching the folder path and file type
+    files = glob.glob(folder_path + file_type)
+
+    # get the most recent file
+    latest_file = max(files, key=os.path.getctime)
+
+    # return only the file name and file extension
+    return os.path.basename(latest_file)
