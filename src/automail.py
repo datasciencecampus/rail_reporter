@@ -68,7 +68,7 @@ def email_rail_report(attachment_filepaths: list[str] = None) -> None:
     # Content is simple
     content = (
         "Please find attached latest rail network status statistics, "
-        + "and graphical outputs."
+        + "if you're seeing this the pipeline so far runs manually"
     )
 
     oauth2_file = "credentials.json"  # This is secret/protected
@@ -97,4 +97,4 @@ if __name__ == "__main__":
     )
 
     # Send report with test file, if called standalone
-    email_rail_report(["outputs/test_output.csv"])
+    email_rail_report()

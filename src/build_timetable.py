@@ -84,7 +84,7 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     logger.info(f'"{zip_name}" unziped.')
 
     # remove header rows (non-timetable data)
-    df = cut_mca_to_size(external_folder_path, zip_name.replace(".zip", ""), dump_date)
+    df = cut_mca_to_size(atoc_folder_path, zip_name.replace(".zip", ""), dump_date)
     logger.info("MCA cut to size.")
 
     # filter journey data and cancellation data
@@ -104,20 +104,6 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         day = datetime.strptime(str(date), "%y%m%d").strftime("%A")
 
         logger.info(f"*** Running with date: {date}, day: {day} ***")
-
-        # # remove header rows (non-timetable data)
-        # df = cut_mca_to_size(
-        #   atoc_folder_path, zip_name.replace(".zip", ""), dump_date
-        # )
-        # logger.info("MCA cut to size.")
-
-        # # filter journey data and cancellation data
-        # logger.info("Creating calendar and cancelled dataframes... (~30s)")
-        # calendar_df, cancelled_df = create_perm_and_new_df(df)
-
-        # # include only rows for actual station stops i.e. not flybys
-        # calendar_df = calendar_df[calendar_df["TIPLOC_type"] != "F"]
-        # logger.info("Created calendar and cancelled dataframes and removed flybys.")
 
         logger.info(f"Filtering to {date}...")
         canc_today = filter_to_date(cancelled_df, date=date, cancellations=True)

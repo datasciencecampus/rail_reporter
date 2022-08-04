@@ -37,11 +37,12 @@ def main():
     # Produce statistics from that file
     os.system(f"python ./src/build_timetable.py {latest['name']}")
 
-    # Bundle outputs to zip
+    # Bundle outputs to zip, selecting all csv's, html's dated today
     out_files = [
         file
         for file in os.listdir(os.getenv("DIR_OUTPUTS"))
-        if (".csv" in file) | (".html" in file)
+        if ((".csv" in file) | (".html" in file))
+        & (datetime.now().strftime("%Y%m%d") in file)
     ]
 
     archive_name = "rail_status_{date}.zip".format(date=str(datetime.now().date()))
