@@ -35,7 +35,7 @@ def main():
     logger.info(f"Latest file: {latest['name']}")
 
     # Produce statistics from that file
-    os.system(f"python ./src/build_timetable.py {latest['name']}")
+    os.system(f"python ./src/build_timetable.py {latest['name']} --increment_days 3")
 
     # Bundle outputs to zip, selecting all csv's, html's dated today
     out_files = [

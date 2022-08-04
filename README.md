@@ -54,6 +54,15 @@ Currently only fetching rail data is fully implemented.
 python run.py
 ```
 
+We have automated this using crontab on Mac.  Setting this up requires some
+additional steps.  For instructions on enabling crontab on OSX [see here](https://osxdaily.com/2020/04/27/fix-cron-permissions-macos-full-disk-access/).
+For a tutorial on how to set up a cron job (scheduled program) [see here](https://www.youtube.com/watch?v=QZJ1drMQz1A).
+For a useful tool for composing cron schedules/instructions [see here](https://crontab.guru/).
+
+- make the run script executable with: `chmod u+x run.sh`
+
+- our cron schedule entry: `0 5 * * * cd <project_folder> && ./run.sh`
+
 
 ## Running steps independently
 
@@ -120,3 +129,4 @@ chmod u+x src/clean_railfeed_zip.sh
 - end-to-end tests
 - unit tests for functions in utils
 - email alerts to the team when something messes up
+- fix all our dates stuff for daylight savings etc
