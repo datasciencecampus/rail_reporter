@@ -1,4 +1,5 @@
 import os
+import json
 import click
 import logging
 import paramiko
@@ -61,12 +62,14 @@ def main(feed_type: str, data_directory: str):
 
     # Return what happened
     if len(to_download) > 0:
-        # Report via environment variable
-        os.system("export NEW_FEED=True")
+        # Report via json
+        with open("progress.json", "w") as f:
+            json.dump({"new_files": True}, f)
         return True
     else:
         logger.info(f"No new rail data files in feed {feed_type} detected")
-        os.system("export NEW_FEED=False")
+        with open("progress.json", "w") as f:
+            json.dump({"new_files": False}, f)
         return False
 
 

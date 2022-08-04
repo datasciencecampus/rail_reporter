@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import click
 import pandas as pd
 import numpy as np
-from pyprojroot import here
 from pathlib import Path
 
 
@@ -16,7 +15,6 @@ from utils import (
     filter_to_date,
     filter_to_dft_time,
     find_station_tiplocs,
-    get_most_recent_file,
     unpack_atoc_data,
     download_big_file,
 )
@@ -52,13 +50,12 @@ def main(
     """
     logger = logging.getLogger(__name__)
 
-    if zip_name is None:
-        atoc_folder_path = os.path.join(here(), "data", "external", "atoc")
-        zip_name = get_most_recent_file(atoc_folder_path)
-        logger.info(
-            f'Setting `zip_name` to "{zip_name}" (latest file) automatically'
-            " since the optional argument was not set."
-        )
+    # if zip_name is None:
+    #     zip_name = get_most_recent_file(data_directory)
+    #     logger.info(
+    #         f'Setting `zip_name` to "{zip_name}" (latest file) automatically'
+    #         " since the optional argument was not set."
+    #     )
 
     # set to today if no dump_date is provided
     if dump_date is None:

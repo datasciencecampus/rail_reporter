@@ -1,4 +1,5 @@
 import os
+import json
 import zipfile
 import logging
 
@@ -21,15 +22,18 @@ def main():
     # Fetch latest files
     os.system(f"python ./src/fetch_feeds.py timetable {ATOC_DIR}")
 
-    if not bool(os.getenv("NEW_FEED")):
-        logger.info("No new feed data has been found, reporting and exiting.")
-        content = (
-            "No new feed data detected this morning, "
-            + "this may be a temporary delay in the data source, "
-            + "we will try again this afternoon."
-        )
-        email_rail_report(content=content)
-        return None
+    with open("progress.json", "r") as f:
+        prog = json.load(f)
+
+        if not prog["new_files"]:
+            logger.info("No new feed data has been found, " + "reporting and exiting.")
+            content = (
+                "No new feed data detected this morning, "
+                + "this may be a temporary delay in the data source, "
+                + "we will try again this afternoon."
+            )
+            email_rail_report(content=content)
+            return None
 
     # Find all ATOC zips for FULL data
     files = [
@@ -48,7 +52,7 @@ def main():
     # Produce statistics from that file
     os.system(
         "python ./src/build_timetable.py "
-        + f"{latest['name']} {ATOC_DIR} {OUT_DIR} --increment_days 3"
+        + f"{latest['name']} {ATOC_DIR} {OUT_DIR} --no_days 3"
     )
 
     # Bundle outputs to zip, selecting all csv's, html's dated today
