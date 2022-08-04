@@ -10,7 +10,8 @@ import numpy as np
 from utils import (
     create_perm_and_new_df,
     cut_mca_to_size,
-    filter_to_date_and_time,
+    filter_to_date,
+    filter_to_dft_time,
     find_station_tiplocs,
     unpack_atoc_data,
     download_big_file,
@@ -21,10 +22,8 @@ from utils import (
 @click.argument("zip_name")
 @click.option("--dump_date", default=None, type=str)
 @click.option("--start_date", default=None, type=str)
-@click.option("--increment_days", default=3, type=int)
-def build_timetable(
-    zip_name: str, dump_date: str, start_date: str, increment_days: int
-):
+@click.option("--increment_days", default=30, type=int)
+def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     """
     Handles building and saving timetable data for a daily ATOC feed
 
@@ -84,6 +83,18 @@ def build_timetable(
     unpack_atoc_data(atoc_folder_path, zip_name, dump_date)
     logger.info(f'"{zip_name}" unziped.')
 
+    # remove header rows (non-timetable data)
+    df = cut_mca_to_size(external_folder_path, zip_name.replace(".zip", ""), dump_date)
+    logger.info("MCA cut to size.")
+
+    # filter journey data and cancellation data
+    logger.info("Creating calendar and cancelled dataframes... (~30s)")
+    calendar_df, cancelled_df = create_perm_and_new_df(df)
+
+    # include only rows for actual station stops i.e. not flybys
+    calendar_df = calendar_df[calendar_df["TIPLOC_type"] != "F"]
+    logger.info("Created calendar and cancelled dataframes and removed flybys.")
+
     for run_num, date_datetime in enumerate(dates):
 
         # get the date in the required int format
@@ -94,26 +105,31 @@ def build_timetable(
 
         logger.info(f"*** Running with date: {date}, day: {day} ***")
 
-        # remove header rows (non-timetable data)
-        df = cut_mca_to_size(atoc_folder_path, zip_name.replace(".zip", ""), dump_date)
-        logger.info("MCA cut to size.")
+        # # remove header rows (non-timetable data)
+        # df = cut_mca_to_size(
+        #   atoc_folder_path, zip_name.replace(".zip", ""), dump_date
+        # )
+        # logger.info("MCA cut to size.")
 
-        # filter journey data and cancellation data
-        logger.info("Creating calendar and cancelled dataframes... (~30s)")
-        calendar_df, cancelled_df = create_perm_and_new_df(df)
+        # # filter journey data and cancellation data
+        # logger.info("Creating calendar and cancelled dataframes... (~30s)")
+        # calendar_df, cancelled_df = create_perm_and_new_df(df)
 
-        # include only rows for actual station stops i.e. not flybys
-        calendar_df = calendar_df[calendar_df["TIPLOC_type"] != "F"]
-        logger.info("Created calendar and cancelled dataframes and removed flybys.")
+        # # include only rows for actual station stops i.e. not flybys
+        # calendar_df = calendar_df[calendar_df["TIPLOC_type"] != "F"]
+        # logger.info("Created calendar and cancelled dataframes and removed flybys.")
 
         logger.info(f"Filtering to {date}...")
-        cal_today = filter_to_date_and_time(calendar_df, date, day)
-        canc_today = filter_to_date_and_time(cancelled_df, date, day)
+        canc_today = filter_to_date(cancelled_df, date=date, cancellations=True)
+        cal_today = filter_to_date(calendar_df, date=date)
+        cal_times_today = filter_to_dft_time(cal_today)
 
         # filter permanent timetabled journeys attributed to this date
         # (i.e. before any cancellations or exceptions)
         timetabled = (
-            cal_today["TIPLOC"][cal_today["Flag"] == "P"].value_counts().reset_index()
+            cal_times_today["TIPLOC"][cal_times_today["Flag"] == "P"]
+            .value_counts()
+            .reset_index()
         )
         timetabled.columns = ["TIPLOC", "journeys_timetabled"]
         timetabled["journeys_timetabled"] = timetabled["journeys_timetabled"].astype(
@@ -121,8 +137,8 @@ def build_timetable(
         )
 
         # split journeys into categories
-        perm_new_today = cal_today[cal_today["Flag"].isin(["P", "N"])]
-        overlays_today = cal_today[cal_today["Flag"] == "O"]
+        perm_new_today = cal_times_today[cal_times_today["Flag"].isin(["P", "N"])]
+        overlays_today = cal_times_today[cal_times_today["Flag"] == "O"]
 
         # list affected journeys
         overlays_today_list = overlays_today["Identifier"].unique()
@@ -206,4 +222,4 @@ if __name__ == "__main__":
         ),
     )
 
-    build_timetable()
+    main()

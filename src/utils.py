@@ -1,11 +1,13 @@
 import os
 import re
 import requests
-
-import pandas as pd
+import calendar
 
 from zipfile import ZipFile
+from datetime import datetime, timedelta
 from convertbng.util import convert_lonlat
+
+import pandas as pd
 
 
 def request_with_fails(url, savepath):
@@ -96,7 +98,7 @@ def cut_mca_to_size(folder_path, zip_name, dump_date):
     return timetable
 
 
-def create_perm_and_new_df(timetable):
+def create_perm_and_new_df(timetable):  # noqa: C901
 
     ind_movts = []
     cancelled_movts = []
@@ -142,8 +144,15 @@ def create_perm_and_new_df(timetable):
             if spec_line[:2] == "LO":
                 tiploc = spec_line[2:].split(" ")[0]
                 station_stop += 1
-                time = spec_line[15:19]
+                time = spec_line[15:19]  # updated to departure time
                 tiploc_type = "S"  # station
+
+                # added to isolate DfT's 0000-0159 requirement
+                if time >= "0000" and time <= "0159":
+                    small_hours = 1
+                else:
+                    small_hours = 0
+
                 ind_movts.append(
                     [
                         unq_id,
@@ -162,13 +171,14 @@ def create_perm_and_new_df(timetable):
                         cal_from,
                         cal_to,
                         flag,
+                        small_hours,
                     ]
                 )
 
             elif spec_line[:2] == "LT":
                 tiploc = spec_line[2:].split(" ")[0]
                 station_stop += 1
-                time = spec_line[15:19]
+                time = spec_line[15:19]  # updated to departure time
                 tiploc_type = "S"  # station
                 ind_movts.append(
                     [
@@ -188,6 +198,7 @@ def create_perm_and_new_df(timetable):
                         cal_from,
                         cal_to,
                         flag,
+                        small_hours,
                     ]
                 )
 
@@ -196,12 +207,12 @@ def create_perm_and_new_df(timetable):
 
                 # times for stations and junctions (slightly different format)
                 if spec_line[10] != " ":
-                    time = spec_line[15:19]
+                    time = spec_line[15:19]  # updated to departure time
                     tiploc_type = "S"  # station
                     station_stop += 1
                 else:
                     time = spec_line[20:24]
-                    tiploc_type = "F"  # flyby
+                    tiploc_type = "F"  # flyby, will be filtered out later
 
                 ind_movts.append(
                     [
@@ -221,6 +232,7 @@ def create_perm_and_new_df(timetable):
                         cal_from,
                         cal_to,
                         flag,
+                        small_hours,
                     ]
                 )
 
@@ -246,6 +258,7 @@ def create_perm_and_new_df(timetable):
             "Valid_from",
             "Valid_to",
             "Flag",
+            "Small_hours",
         ],
     )
 
@@ -269,24 +282,24 @@ def create_perm_and_new_df(timetable):
     return calendar_df, cancelled_df
 
 
-def filter_to_date_and_time(
-    journey_rows_df,
-    date,
-    weekday,
-    # time_slice=(["0000", "2359"]),
-):
+# def filter_to_date_and_time(
+#     journey_rows_df,
+#     date,
+#     weekday,
+#     # time_slice=(["0000", "2359"]),
+# ):
 
-    journey_rows_df[["Valid_from", "Valid_to"]] = journey_rows_df[
-        ["Valid_from", "Valid_to"]
-    ].astype("int64")
+#     journey_rows_df[["Valid_from", "Valid_to"]] = journey_rows_df[
+#         ["Valid_from", "Valid_to"]
+#     ].astype("int64")
 
-    return journey_rows_df[
-        (journey_rows_df["Valid_from"] <= date)
-        & (journey_rows_df["Valid_to"] >= date)
-        # & (journey_rows_df["Time"] >= time_slice[0])
-        # & (journey_rows_df["Time"] <= time_slice[1])
-        & (journey_rows_df[weekday] == "1")
-    ]
+#     return journey_rows_df[
+#         (journey_rows_df["Valid_from"] <= date)
+#         & (journey_rows_df["Valid_to"] >= date)
+#         # & (journey_rows_df["Time"] >= time_slice[0])
+#         # & (journey_rows_df["Time"] <= time_slice[1])
+#         & (journey_rows_df[weekday] == "1")
+#     ]
 
 
 def find_station_tiplocs(stops_file_path):
@@ -308,3 +321,78 @@ def find_station_tiplocs(stops_file_path):
     tiploc_clean.rename(columns={"CommonName": "Station_Name"}, inplace=True)
 
     return tiploc_clean
+
+
+def filter_to_date(journey_rows_df, date, cancellations=False):
+
+    journey_rows_df[["Valid_from", "Valid_to"]] = journey_rows_df[
+        ["Valid_from", "Valid_to"]
+    ].astype("int64")
+
+    # lookahead by one day
+    d1 = datetime.strptime(str(date), "%y%m%d").date()
+    d2 = d1 + timedelta(1)
+    date2 = int(d2.strftime("%y%m%d"))
+
+    weekday1 = calendar.day_name[d1.weekday()]
+    weekday2 = calendar.day_name[d2.weekday()]
+
+    # cancellation rows don't feature times
+    if cancellations is True:
+        day1 = journey_rows_df[
+            (journey_rows_df[weekday1] == "1")
+            & (journey_rows_df["Valid_from"] <= date)
+            & (journey_rows_df["Valid_to"] >= date)
+        ]
+
+        day2 = journey_rows_df[
+            (journey_rows_df[weekday2] == "1")
+            & (journey_rows_df["Valid_from"] <= date2)
+            & (journey_rows_df["Valid_to"] >= date2)
+        ]
+
+        output = pd.concat([day1, day2])
+
+    # all other journey rows can be filtered by time
+    else:
+        core_time = journey_rows_df[
+            (journey_rows_df[weekday1] == "1")
+            & (journey_rows_df["Valid_from"] <= date)
+            & (journey_rows_df["Valid_to"] >= date)
+            & (journey_rows_df["Small_hours"] == 0)
+        ]
+
+        small_time = journey_rows_df[
+            (journey_rows_df[weekday2] == "1")
+            & (journey_rows_df["Valid_from"] <= date2)
+            & (journey_rows_df["Valid_to"] >= date2)
+            & (journey_rows_df["Small_hours"] == 1)
+        ]
+
+        output = pd.concat([core_time, small_time])
+
+    return output
+
+
+def filter_to_dft_time(
+    today_rows_df,
+):
+
+    # id journeys starting between 0200 and 2359
+    core_start = list(
+        today_rows_df["Identifier"][
+            (today_rows_df["Stop"] == 1) & (today_rows_df["Time"] >= "0200")
+        ]
+    )
+
+    # id journeys starting between 0000 and 0159
+    small_start = list(
+        today_rows_df["Identifier"][
+            (today_rows_df["Stop"] == 1) & (today_rows_df["Time"] < "0200")
+        ]
+    )
+
+    core_journeys = today_rows_df[today_rows_df["Identifier"].isin(core_start)]
+    small_journeys = today_rows_df[today_rows_df["Identifier"].isin(small_start)]
+
+    return pd.concat([core_journeys, small_journeys])
