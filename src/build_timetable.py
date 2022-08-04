@@ -15,12 +15,13 @@ from utils import (
     filter_to_date,
     filter_to_dft_time,
     find_station_tiplocs,
+    get_most_recent_file,
     unpack_atoc_data,
 )
 
 
 @click.command()
-@click.argument("zip_name")
+@click.option("--zip_name", default=None, type=str)
 @click.option("--dump_date", default=None, type=str)
 @click.option("--start_date", default=None, type=str)
 @click.option("--increment_days", default=30, type=int)
@@ -40,6 +41,14 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     """
     logger = logging.getLogger(__name__)
 
+    if zip_name is None:
+        atoc_folder_path = os.path.join(here(), "data", "external", "atoc")
+        zip_name = get_most_recent_file(atoc_folder_path)
+        logger.info(
+            f'Setting `zip_name` to "{zip_name}" (latest file) automatically'
+            " since the optional argument was not set."
+        )
+
     # set to today if no dump_date is provided
     if dump_date is None:
         dump_date = datetime.now().date().strftime("%d%m%Y")
@@ -52,7 +61,7 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         # add one day so pipeline starts one day after dump day
         start_date = datetime.now().date() + timedelta(days=1)
         logger.info(
-            f"Setting `start_date` to {start_date} (today) automatically since the"
+            f"Setting `start_date` to {start_date} (today+1) automatically since the"
             "optional argument was not set."
         )
     else:
@@ -83,7 +92,11 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     logger.info(f'"{zip_name}" unziped.')
 
     # remove header rows (non-timetable data)
-    df = cut_mca_to_size(external_folder_path, zip_name.replace(".zip", ""), dump_date)
+    df = cut_mca_to_size(
+        external_folder_path,
+        zip_name.replace(".zip", "").replace(".ZIP", ""),
+        dump_date,
+    )
     logger.info("MCA cut to size.")
 
     # filter journey data and cancellation data
