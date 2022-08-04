@@ -59,7 +59,7 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
     # print inputs to logger for records
     logger.info(
         f'Using inputs ATOC zip:"{zip_name}", dump_date:"{dump_date}",'
-        f' start_date:{start_date}, increment_days:"{increment_days}".'
+        f" start_date:{start_date}, increment_days:{increment_days}."
     )
 
     # build a list of days to run over
@@ -156,7 +156,8 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         scheduled = final_df["TIPLOC"].value_counts().reset_index()
         scheduled.columns = ["TIPLOC", "journeys_scheduled"]
 
-        merged = pd.merge(scheduled, timetabled, on="TIPLOC", how="left")
+        merged = pd.merge(scheduled, timetabled, on="TIPLOC", how="outer")
+        merged["journeys_scheduled"].fillna(0, inplace=True)
         merged["pct_timetabled_services_running"] = np.round(
             merged["journeys_scheduled"] / merged["journeys_timetabled"] * 100, 2
         )
@@ -203,7 +204,7 @@ if __name__ == "__main__":
         filename=os.path.join(
             os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
-        filemode="a",
+        filemode="w",
     )
 
     main()
