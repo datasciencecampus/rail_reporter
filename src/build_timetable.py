@@ -7,6 +7,7 @@ import click
 import pandas as pd
 import numpy as np
 from pyprojroot import here
+from pathlib import Path
 
 from utils import (
     create_perm_and_new_df,
@@ -185,8 +186,20 @@ def main(zip_name: str, dump_date: str, start_date: str, increment_days: int):
         f"full_uk_disruption_summary_multiday_start_"
         f'{str(start_date).replace("-","")}_{increment_days}days.csv'
     )
-    out_df.to_csv(os.path.join(outputs_folder_path, output_file_name))
-    logger.info(f"out_df exported to {outputs_folder_path}/{output_file_name}")
+
+    # create a dedicated folder inside the outputs dir
+    dedicated_output_folder_name = str(start_date).replace("-", "")
+    logger.info(f"Making dedicated folder {dedicated_output_folder_name}")
+    Path(os.path.join(outputs_folder_path, dedicated_output_folder_name)).mkdir(
+        parents=True, exist_ok=True
+    )
+
+    # save to csv in the dedicated directory
+    csv_filepath = os.path.join(
+        outputs_folder_path, dedicated_output_folder_name, output_file_name
+    )
+    out_df.to_csv(csv_filepath)
+    logger.info(f"out_df exported to {csv_filepath}")
 
     # tidyup - remove unzipped atoc folder
     shutil.rmtree(os.path.join(external_folder_path, "atoc", f"atoc_{dump_date}"))
