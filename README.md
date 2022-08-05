@@ -19,6 +19,9 @@ python -m pip install -r requirements.txt
 
 brew install direnv   # Install (OSX) if not installed already
 direnv allow   # Allow direnv to make available project environment variables
+
+brew install firefox     # Used to create static images from html
+brew install geckodriver # Used to create static images from html
 ```
 
 Note: you may need to add `eval "$(direnv hook zsh)"` to the ~/.zshrc file during an initial setup.
@@ -130,4 +133,6 @@ chmod u+x src/clean_railfeed_zip.sh
 - unit tests for functions in utils
 - email alerts to the team when something messes up
 - fix all our dates stuff for daylight savings etc
-- so much tech-debt!
+- Relocate the geckodriver log to our own log
+- Add entries for stations with no services to the csv output
+- Change visuals for stations with no services to empty circle
