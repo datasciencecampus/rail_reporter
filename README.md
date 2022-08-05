@@ -136,3 +136,5 @@ chmod u+x src/clean_railfeed_zip.sh
 - Relocate the geckodriver log to our own log
 - Add entries for stations with no services to the csv output
 - Change visuals for stations with no services to empty circle
+- Cleanup:  delete zipfile(/output subfolder?) once sent
+- Look into python HTML compression
