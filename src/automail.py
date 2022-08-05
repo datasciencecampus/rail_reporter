@@ -70,10 +70,7 @@ def email_rail_report(
 
     # Content is simple
     if not content:
-        content = (
-            "Please find attached latest rail network status statistics, "
-            + "if you're seeing this the pipeline so far runs manually"
-        )
+        content = "Please find attached latest rail network status statistics."
 
     oauth2_file = "credentials.json"  # This is secret/protected
 
