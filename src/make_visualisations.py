@@ -7,7 +7,11 @@ import pandas as pd
 from pyprojroot import here
 
 from utils import (
+    add_build_date,
+    add_timestamped_geojson,
     add_folium_times,
+    add_logo,
+    build_base_map,
     build_features,
     build_legend_macro,
     convert_to_gpdf,
@@ -88,13 +92,35 @@ def main(
         f'Max marker radius: {gp_df["radius"].max()}.'
     )
 
-    _ = build_legend_macro()
-    logger.info("Legend macro built.")
-
     # drop missing rows with no percentage data
     gp_df = gp_df[~gp_df["pct_timetabled_services_running"].isna()]
 
-    _ = build_features(gp_df)
+    features = build_features(gp_df)
+    logger.info("Built features.")
+
+    m = build_base_map(full_screen, mini_map, add_geocoder, measure_control)
+    logger.info("Built base map")
+
+    m = add_timestamped_geojson(m, features)
+    logger.info("Added TimestampedGeoJson object to map.")
+
+    m = add_logo(m)
+    logger.info("Added logo to map.")
+
+    m = add_build_date(m)
+    logger.info("Added build date to map.")
+
+    macro = build_legend_macro()
+    m.get_root().add_child(macro)
+    logger.info("Legend macro built and added.")
+
+    logger.info("Saving timeseries visual...")
+    vis_filepath = os.path.join(
+        working_directory,
+        csv_input_filename.replace(".csv", ".html"),
+    )
+    m.save(vis_filepath)
+    logger.info(f"Timeseries visual saved {vis_filepath}")
 
 
 if __name__ == "__main__":

@@ -6,14 +6,26 @@ from zipfile import ZipFile
 from datetime import datetime, timedelta
 import calendar
 import glob
+import base64
+from pyprojroot import here
 
 import pandas as pd
 import numpy as np
 from convertbng.util import convert_lonlat
 import geopandas as gpd
+import folium
+from folium.plugins import (
+    FloatImage,
+    Fullscreen,
+    Geocoder,
+    MeasureControl,
+    MiniMap,
+    TimestampedGeoJson,
+)
 
 from branca.element import MacroElement, Template
 from shapely.geometry import mapping
+from PIL import Image, ImageDraw, ImageFont
 
 
 def breakout_filenames(filename: str):
@@ -610,3 +622,95 @@ def build_features(gp_df):
         }
         for _, row in gp_df.iterrows()
     ]
+
+    return features
+
+
+def build_base_map(
+    full_screen: bool, mini_map: bool, add_geocoder: bool, measure_control: bool
+):
+
+    m = folium.Map(
+        tiles="openstreetmap",
+        max_bounds=True,
+    )
+
+    if full_screen:
+        m.add_child(Fullscreen())
+
+    if mini_map:
+        m.add_child(MiniMap())
+
+    if add_geocoder:
+        m.add_child(Geocoder(add_marker=False, collapsed=True))
+
+    # add measuring controls if requested
+    if measure_control:
+        m.add_child(
+            MeasureControl(
+                primary_length_unit="kilometers",
+            )
+        )
+
+    return m
+
+
+def add_timestamped_geojson(m, features):
+
+    # add TimestampGeoJson to the area
+    TimestampedGeoJson(
+        {
+            "type": "FeatureCollection",
+            "features": features,
+        },
+        transition_time=2000,
+        period="P1D",
+        duration="PT1s",
+        max_speed=2,
+        date_options="YYYY-MM-DD",
+        auto_play=False,
+    ).add_to(m)
+
+    # fit view to bounds
+    m.fit_bounds(m.get_bounds())
+
+    return m
+
+
+def add_logo(m):
+
+    logo_filepath = os.path.join(here(), "src", "images", "logo_reduced.png")
+
+    with open(logo_filepath, "rb") as lf:
+        # open in binary mode, read bytes, encode, decode obtained bytes as utf-8 string
+        b64_content = base64.b64encode(lf.read()).decode("utf-8")
+
+    FloatImage("data:image/png;base64,{}".format(b64_content), bottom=7, left=1).add_to(
+        m
+    )
+
+    return m
+
+
+def add_build_date(m):
+
+    build_date_filepath = os.path.join(here(), "src", "images", "build_text.png")
+
+    W, H = (200, 200)
+    im = Image.new("RGBA", (W, H))
+    draw = ImageDraw.Draw(im)
+    msg = "Generated on {}".format(datetime.now().date().strftime("%Y-%m-%d"))
+    fnt = ImageFont.truetype("/Library/Fonts/Arial.ttf", 14)
+    _, _, w, h = fnt.getbbox(msg)
+    draw.text((0, 0), msg, font=fnt, fill=(0, 0, 0))
+    im.crop((0, 0, w, h)).save(build_date_filepath, "PNG")
+
+    with open(build_date_filepath, "rb") as lf:
+        # open in binary mode, read bytes, encode, decode obtained bytes as utf-8 string
+        b64_content = base64.b64encode(lf.read()).decode("utf-8")
+
+    FloatImage("data:image/png;base64,{}".format(b64_content), bottom=5, left=1).add_to(
+        m
+    )
+
+    return m
