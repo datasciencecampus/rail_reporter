@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import calendar
 import glob
 import base64
+import io
+import time
 from pyprojroot import here
 
 import pandas as pd
@@ -22,6 +24,8 @@ from folium.plugins import (
     MiniMap,
     TimestampedGeoJson,
 )
+from folium.utilities import temp_html_filepath
+from selenium import webdriver
 
 from branca.element import MacroElement, Template
 from shapely.geometry import mapping
@@ -717,15 +721,34 @@ def add_build_date(m):
     return m
 
 
-def build_static_visual(folder_path, date, place, html_str):
+def build_static_visual(folder_path, date, place, m):
 
     png_filename = f"full_uk_disruption_summary_{date}_{place}.png"
 
-    hti = Html2Image(
-        # custom_flags=["--virtual-time-budget=10000", "--hide-scrollbars"],
-        output_path=folder_path,
-    )
+    options = webdriver.firefox.options.Options()
+    options.add_argument("--headless")
+    driver = webdriver.Firefox(options=options)
 
-    hti.screenshot(html_str=html_str, save_as=png_filename)
+    html = m.get_root().render()
+    with temp_html_filepath(html) as fname:
+        # We need the tempfile to avoid JS security issues.
+        driver.get("file:///{path}".format(path=fname))
+        driver.set_window_position(0, 0)
+        driver.set_window_size(1920, 1080)
+        time.sleep(5)
+        img_data = driver.get_screenshot_as_png()
+        driver.quit()
 
-    del hti
+    img = Image.open(io.BytesIO(img_data))
+    img.save(os.path.join(folder_path, png_filename))
+    # hti = Html2Image(
+    #     custom_flags=[
+    #         "--virtual-time-budget=250",
+    #         "--hide-scrollbars",
+    #     ],
+    #     output_path=folder_path,
+    # )
+
+    # hti.screenshot(html_str=html_str, save_as=png_filename)
+
+    # del hti
