@@ -55,13 +55,16 @@ def main():
         + f"{latest['name']} {ATOC_DIR} {OUT_DIR} --no_days 3"
     )
 
+    # Produce visualisation from those statistics
+    os.system("python ./src/make_visualisations.py --no_days 3")
+
     # Bundle outputs to zip, selecting all csv's, html's dated today
     OUT_FOLDER = os.path.join(OUT_DIR, datetime.now().strftime("%Y%m%d"))
 
     out_files = [
         file
         for file in os.listdir(OUT_FOLDER)
-        if ((".csv" in file) | (".html" in file))
+        if ((".csv" in file) | (".html" in file) | (".png" in file))
         & (datetime.now().strftime("%Y%m%d") in file)
     ]
 

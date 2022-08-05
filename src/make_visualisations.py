@@ -52,7 +52,7 @@ def main(
 
     # handle working directory
     if working_directory is None:
-        working_directory = os.path.join(here(), "output", date)
+        working_directory = os.path.join(here(), "outputs", date)
         logger.info(
             f"Setting `working_directory` to {working_directory} automatically"
             " since the optional argument was not set."
