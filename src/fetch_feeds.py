@@ -38,7 +38,7 @@ def main(feed_type: str):
     local_rail_files = [
         file
         for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
-        if file.endswith(".zip")
+        if file.endswith(".zip") | file.endswith(".ZIP")
     ]
 
     # download anything new
