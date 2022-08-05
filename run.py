@@ -52,11 +52,11 @@ def main():
     # Produce statistics from that file
     os.system(
         "python ./src/build_timetable.py "
-        + f"{latest['name']} {ATOC_DIR} {OUT_DIR} --no_days 3"
+        + f"{latest['name']} {ATOC_DIR} {OUT_DIR} --no_days 30"
     )
 
     # Produce visualisation from those statistics
-    os.system("python ./src/make_visualisations.py --no_days 3")
+    os.system("python ./src/make_visualisations.py --no_days 30")
 
     # Bundle outputs to zip, selecting all csv's, html's dated today
     OUT_FOLDER = os.path.join(OUT_DIR, datetime.now().strftime("%Y%m%d"))

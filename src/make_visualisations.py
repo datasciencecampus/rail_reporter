@@ -23,6 +23,7 @@ from utils import (
 @click.command()
 @click.option("--working_directory", default=None, type=str)
 @click.option("--csv_input_filename", default=None, type=str)
+@click.option("--start_date", default=None, type=str)
 @click.option("--no_days", default=30, type=int)
 @click.option("--scale_markers_on", default="journeys_timetabled", type=str)
 @click.option(
@@ -36,6 +37,7 @@ from utils import (
 def main(
     working_directory: str,
     csv_input_filename: str,
+    start_date: str,
     no_days: int,
     scale_markers_on: str,
     measure_control: bool,
@@ -49,6 +51,16 @@ def main(
     logger = logging.getLogger(__name__)
 
     date = datetime.now().date().strftime("%Y%m%d")
+
+    if start_date is None:
+        # add one day so pipeline starts one day after dump day
+        date = datetime.now().date().strftime("%Y%m%d")
+        logger.info(
+            f"Setting `date` to {date} (today+1) automatically since the"
+            "optional argument was not set."
+        )
+    else:
+        date = datetime.strptime(start_date, "%d%m%Y").date().strftime("%Y%m%d")
 
     # handle working directory
     if working_directory is None:
