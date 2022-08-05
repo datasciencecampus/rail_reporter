@@ -56,20 +56,20 @@ def main():
     )
 
     # Bundle outputs to zip, selecting all csv's, html's dated today
+    OUT_FOLDER = os.path.join(OUT_DIR, datetime.now().strftime("%Y%m%d"))
+
     out_files = [
         file
-        for file in os.listdir(os.getenv("DIR_OUTPUTS"))
+        for file in os.listdir(OUT_FOLDER)
         if ((".csv" in file) | (".html" in file))
         & (datetime.now().strftime("%Y%m%d") in file)
     ]
 
     archive_name = "rail_status_{date}.zip".format(date=str(datetime.now().date()))
 
-    with zipfile.ZipFile(
-        os.path.join(os.getenv("DIR_OUTPUTS"), archive_name), mode="w"
-    ) as archive:
+    with zipfile.ZipFile(os.path.join(OUT_FOLDER, archive_name), mode="w") as archive:
         for file in out_files:
-            file_path = os.path.join(os.getenv("DIR_OUTPUTS"), file)
+            file_path = os.path.join(OUT_FOLDER, file)
             archive.write(file_path, arcname=file)
 
     logger.info(
@@ -79,9 +79,7 @@ def main():
     )
 
     # Mail the zip file to the recipient list configured in .secrets
-    email_rail_report(
-        attachment_filepaths=[os.path.join(os.getenv("DIR_OUTPUTS"), archive_name)]
-    )
+    email_rail_report(attachment_filepaths=[os.path.join(OUT_FOLDER, archive_name)])
 
 
 if __name__ == "__main__":
