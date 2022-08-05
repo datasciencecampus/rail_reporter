@@ -136,12 +136,11 @@ def main(
         "northeast": [(54.4035, -1.7326), (55.0393, 0.9371)],
         "scotland": [(55.6800, -4.5136), (56.1745, -3.0308)],
     }
+
     for place in bboxes.keys():
         logger.info(f"Building {place} static visual...")
-        m.fit_bounds(bboxes[place])
-        bbox_html = m.get_root().render()
+        m.fit_bounds(bboxes[place], padding=(-50, -50))
         build_static_visual(working_directory, date, place, m)
-        del bbox_html
         logger.info(f"Built {place} static visual.")
 
     logger.info("Make visualisations completed!")

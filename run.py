@@ -73,7 +73,7 @@ def main():
     with zipfile.ZipFile(os.path.join(OUT_FOLDER, archive_name), mode="w") as archive:
         for file in out_files:
             file_path = os.path.join(OUT_FOLDER, file)
-            archive.write(file_path, arcname=file)
+            archive.write(file_path, arcname=file, compress_type=zipfile.ZIP_DEFLATED)
 
     logger.info(
         "files {file_list} zipped to {archive}".format(
