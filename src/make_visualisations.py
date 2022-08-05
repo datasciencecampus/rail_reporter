@@ -156,7 +156,7 @@ if __name__ == "__main__":
         filename=os.path.join(
             os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
-        filemode="w",
+        filemode="a",
     )
 
     main()
