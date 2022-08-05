@@ -59,7 +59,7 @@ def main(zip_name: str, dump_date: str, start_date: str, no_days: int):
 
     if start_date is None:
         # add one day so pipeline starts one day after dump day
-        start_date = datetime.now().date() + timedelta(days=1)
+        start_date = datetime.now().date()
         logger.info(
             f"Setting `start_date` to {start_date} (today+1) automatically since the"
             "optional argument was not set."
