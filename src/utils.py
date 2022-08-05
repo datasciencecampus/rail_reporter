@@ -1,3 +1,5 @@
+# flake8: noqa E501
+
 import os
 import re
 from zipfile import ZipFile
@@ -6,7 +8,12 @@ import calendar
 import glob
 
 import pandas as pd
+import numpy as np
 from convertbng.util import convert_lonlat
+import geopandas as gpd
+
+from branca.element import MacroElement, Template
+from shapely.geometry import mapping
 
 
 def breakout_filenames(filename: str):
@@ -355,3 +362,251 @@ def get_most_recent_file(folder_path: str, file_type: str = r"/*ZIP"):
 
     # return only the file name and file extension
     return os.path.basename(latest_file)
+
+
+def convert_to_gpdf(df, lat_col="Latitude", long_col="Longitude"):
+    return gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df[long_col], df[lat_col]))
+
+
+def add_folium_times(s: pd.Series, times_prop_name: str) -> list:
+    """Utility function to extend times_prop_name column to a list that
+    matches the geometry shape - requirement for folium timestampedGeoJSON
+    function"""
+    return [s[times_prop_name]]
+
+
+def scale_col(df, col_name, min_val=2, max_val=12):
+
+    srq_root_col = np.sqrt(df[col_name])
+    col_min = srq_root_col.min()
+    col_max = srq_root_col.max()
+
+    return min_val + ((srq_root_col - col_min) * (max_val - min_val)) / (
+        col_max - col_min
+    )
+
+
+def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
+    # color of columns
+    left_col_color = "#0F8243"
+    right_col_color = "#EAEAEA"
+
+    # html string, first using the area_name as the title, then adding the
+    # modality, time and value to a summary table
+    html = (
+        """<!DOCTYPE html>
+        <html>
+        <head>
+        <h4 style="margin-bottom:10"; width="200px">{}</h4>""".format(
+            name
+        )
+        + """
+        </head>
+        <table style="height: 125px; width: 300px;">
+        <tbody>
+        <tr>
+        <td style="background-color: """
+        + left_col_color
+        + """;"><span style="color: #ffffff;">Day (YYYY-MM-DD)</span></td>
+        <td style="width: 150px;background-color: """
+        + right_col_color
+        + """;">{}</td>""".format(time)
+        + """
+        </tr>
+        <tr>
+        <td style="background-color: """
+        + left_col_color
+        + """;"><span style="color: #ffffff;">TIPLOC code</span></td>
+        <td style="width: 150px;background-color: """
+        + right_col_color
+        + """;">{}</td>""".format(tiploc)
+        + """
+        </tr>
+        <tr>
+        <td style="background-color: """
+        + left_col_color
+        + """;"><span style="color: #ffffff;">No. Scheduled Movements</span></td>
+        <td style="width: 150px;background-color: """
+        + right_col_color
+        + """;">{:.0f}</td>""".format(sheduled)
+        + """
+        </tr>
+        <tr>
+        <td style="background-color: """
+        + left_col_color
+        + """;"><span style="color: #ffffff;">No. Timetabled Movements</span></td>
+        <td style="width: 150px;background-color: """
+        + right_col_color
+        + """;">{:.0f}</td>""".format(timetabled)
+        + """
+        </tr>
+        <tr>
+        <td style="background-color: """
+        + left_col_color
+        + """;"><span style="color: #ffffff;">Percentage Running</span></td>
+        <td style="width: 150px;background-color: """
+        + right_col_color
+        + """;">{:.1f}%</td>""".format(percentage)
+        + """
+        </tr>
+        </tbody>
+        </table>
+        </html>
+        """
+    )
+    return html
+
+
+def get_colour(val):
+    if val == 0:
+        return "#000000"
+    if val < 50:
+        return "#8b0000"
+    elif (val >= 50) & (val < 60):
+        return "#ff0000"
+    elif (val >= 60) & (val < 70):
+        return "#ff0066"
+    elif (val >= 70) & (val < 80):
+        return "#ff00cc"
+    elif (val >= 80) & (val < 90):
+        return "#cc00ff"
+    elif (val >= 90) & (val < 100):
+        return "#6600ff"
+    elif val >= 100:
+        return "#0000ff"
+    else:
+        return "#808080"
+
+
+def build_legend_macro():  # noqa: E501
+
+    template = """
+    {% macro html(this, kwargs) %}
+
+    <!doctype html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script>
+    $( function() {
+        $( "#maplegend" ).draggable({
+                        start: function (event, ui) {
+                            $(this).css({
+                                right: "auto",
+                                top: "auto",
+                                bottom: "auto"
+                            });
+                        }
+                    });
+    });
+
+    </script>
+    </head>
+    <body>
+
+
+    <div id='maplegend' class='maplegend'
+        style='position: absolute; z-index:9999; border:2px solid grey; background-color:rgba(255, 255, 255, 0.8);
+        border-radius:6px; padding: 10px; font-size:14px; right: 10px; bottom: 200px;'>
+
+    <div class='legend-title'>Percentage of Timetabled<br>Services Running</div>
+    <div class='legend-scale'>
+    <ul class='legend-labels'>
+        <li><span style='background:#000000;opacity:0.5;'></span>0%</li>
+        <li><span style='background:#8b0000;opacity:0.5;'></span>(0%, 50%)</li>
+        <li><span style='background:#ff0000;opacity:0.5;'></span>[50%, 60%)</li>
+        <li><span style='background:#ff0066;opacity:0.5;'></span>[60%, 70%)</li>
+        <li><span style='background:#ff00cc;opacity:0.5;'></span>[70%, 80%)</li>
+        <li><span style='background:#cc00ff;opacity:0.5;'></span>[80%, 90%)</li>
+        <li><span style='background:#6600ff;opacity:0.5;'></span>[90%, 100%)</li>
+        <li><span style='background:#0000ff;opacity:0.5;'></span>≥100%</li>
+    </ul>
+    </div>
+    </div>
+
+    </body>
+    </html>
+
+    <style type='text/css'>
+    .maplegend .legend-title {
+        text-align: left;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 90%;
+        }
+    .maplegend .legend-scale ul {
+        margin: 0;
+        margin-bottom: 5px;
+        padding: 0;
+        float: left;
+        list-style: none;
+        }
+    .maplegend .legend-scale ul li {
+        font-size: 80%;
+        list-style: none;
+        margin-left: 0;
+        line-height: 18px;
+        margin-bottom: 2px;
+        }
+    .maplegend ul.legend-labels li span {
+        display: block;
+        float: left;
+        height: 16px;
+        width: 30px;
+        margin-right: 5px;
+        margin-left: 0;
+        border: 1px solid #999;
+        }
+    .maplegend .legend-source {
+        font-size: 80%;
+        color: #777;
+        clear: both;
+        }
+    .maplegend a {
+        color: #777;
+        }
+    </style>
+    {% endmacro %}"""
+
+    macro = MacroElement()
+    macro._template = Template(template)
+    return macro
+
+
+def build_features(gp_df):
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": mapping(row["geometry"])["type"],
+                "coordinates": mapping(row["geometry"])["coordinates"],
+            },
+            "properties": {
+                "times": row["times"],
+                "popup": write_tooltip(
+                    row["Station_Name"],
+                    row["times"][0],
+                    row["TIPLOC"],
+                    row["journeys_scheduled"],
+                    row["journeys_timetabled"],
+                    row["pct_timetabled_services_running"],
+                ),
+                "style": {"color": ""},
+                "icon": "circle",
+                "iconstyle": {
+                    "fillColor": get_colour(row["pct_timetabled_services_running"]),
+                    "fillOpacity": 0.5,
+                    "radius": row["radius"],
+                },
+            },
+        }
+        for _, row in gp_df.iterrows()
+    ]
