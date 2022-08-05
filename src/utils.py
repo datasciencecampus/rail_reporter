@@ -267,6 +267,10 @@ def find_station_tiplocs(stops_file_path):
     ].copy()
     tiploc_clean.rename(columns={"CommonName": "Station_Name"}, inplace=True)
 
+    # rename tube stations to common names to avoid confusion with core rail stations
+    tiploc_clean["Station_Name"][tiploc_clean["TIPLOC"]=="LNDNBDC"] = "London Bridge"
+    tiploc_clean["Station_Name"][tiploc_clean["TIPLOC"]=="VICTRIE"] = "London Victoria"
+
     return tiploc_clean
 
 
