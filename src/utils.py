@@ -349,6 +349,12 @@ def find_station_tiplocs(stops_file_path):
     ].copy()
     tiploc_clean.rename(columns={"CommonName": "Station_Name"}, inplace=True)
 
+    # rename tube stations to common names to avoid confusion with core rail stations
+    tiploc_clean["Station_Name"][tiploc_clean["TIPLOC"] == "LNDNBDC"] = "London Bridge"
+    tiploc_clean["Station_Name"][
+        tiploc_clean["TIPLOC"] == "VICTRIE"
+    ] = "London Victoria"
+
     return tiploc_clean
 
 
@@ -793,7 +799,6 @@ def build_static_visual(folder_path, date, place, m):
         driver.get("file:///{path}".format(path=fname))
         driver.set_window_position(0, 0)
         driver.set_window_size(1680, 1050)
-
         time.sleep(5)
         img_data = driver.get_screenshot_as_png()
         driver.quit()
