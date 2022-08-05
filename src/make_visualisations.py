@@ -125,7 +125,7 @@ def main(
 
     logger.info("Building GB static visual...")
     gb_bbox_html = m.get_root().render()
-    build_static_visual(working_directory, date, "GB", gb_bbox_html)
+    build_static_visual(working_directory, date, "GB", m)
     del gb_bbox_html
     logger.info("Built GB static visual.")
 
@@ -140,7 +140,7 @@ def main(
         logger.info(f"Building {place} static visual...")
         m.fit_bounds(bboxes[place])
         bbox_html = m.get_root().render()
-        build_static_visual(working_directory, date, place, bbox_html)
+        build_static_visual(working_directory, date, place, m)
         del bbox_html
         logger.info(f"Built {place} static visual.")
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         filename=os.path.join(
             os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
-        filemode="w",
+        filemode="a",
     )
 
     main()

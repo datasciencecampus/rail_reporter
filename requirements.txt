@@ -17,3 +17,4 @@ folium
 pillow
 pybase64
 html2image
+selenium
