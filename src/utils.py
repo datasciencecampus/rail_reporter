@@ -26,6 +26,7 @@ from folium.plugins import (
 from branca.element import MacroElement, Template
 from shapely.geometry import mapping
 from PIL import Image, ImageDraw, ImageFont
+from html2image import Html2Image
 
 
 def breakout_filenames(filename: str):
@@ -714,3 +715,17 @@ def add_build_date(m):
     )
 
     return m
+
+
+def build_static_visual(folder_path, date, place, html_str):
+
+    png_filename = f"full_uk_disruption_summary_{date}_{place}.png"
+
+    hti = Html2Image(
+        # custom_flags=["--virtual-time-budget=10000", "--hide-scrollbars"],
+        output_path=folder_path,
+    )
+
+    hti.screenshot(html_str=html_str, save_as=png_filename)
+
+    del hti

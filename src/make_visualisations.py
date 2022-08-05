@@ -14,6 +14,7 @@ from utils import (
     build_base_map,
     build_features,
     build_legend_macro,
+    build_static_visual,
     convert_to_gpdf,
     scale_col,
 )
@@ -47,9 +48,10 @@ def main(
     """
     logger = logging.getLogger(__name__)
 
+    date = datetime.now().date().strftime("%Y%m%d")
+
     # handle working directory
     if working_directory is None:
-        date = datetime.now().date().strftime("%Y%m%d")
         working_directory = os.path.join(here(), "output", date)
         logger.info(
             f"Setting `working_directory` to {working_directory} automatically"
@@ -58,7 +60,6 @@ def main(
 
     # handle csv name
     if csv_input_filename is None:
-        date = datetime.now().date().strftime("%Y%m%d")
         csv_input_filename = (
             f"full_uk_disruption_summary_multiday_start_{date}_{no_days}days.csv"
         )
@@ -121,6 +122,29 @@ def main(
     )
     m.save(vis_filepath)
     logger.info(f"Timeseries visual saved {vis_filepath}")
+
+    logger.info("Building GB static visual...")
+    gb_bbox_html = m.get_root().render()
+    build_static_visual(working_directory, date, "GB", gb_bbox_html)
+    del gb_bbox_html
+    logger.info("Built GB static visual.")
+
+    bboxes = {
+        "midlands": [(52.0564, -2.7160), (52.6369, -1.1398)],
+        "london": [(51.0076, -0.9390), (51.8959, 0.8919)],
+        "northwest": [(53.1839, -3.4250), (53.9614, -1.0739)],
+        "northeast": [(54.4035, -1.7326), (55.0393, 0.9371)],
+        "scotland": [(55.6800, -4.5136), (56.1745, -3.0308)],
+    }
+    for place in bboxes.keys():
+        logger.info(f"Building {place} static visual...")
+        m.fit_bounds(bboxes[place])
+        bbox_html = m.get_root().render()
+        build_static_visual(working_directory, date, place, bbox_html)
+        del bbox_html
+        logger.info(f"Built {place} static visual.")
+
+    logger.info("Make visualisations completed!")
 
 
 if __name__ == "__main__":
