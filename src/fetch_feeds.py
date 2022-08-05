@@ -39,7 +39,9 @@ def main(feed_type: str, data_directory: str):
     # Check what files already exist
     logger.info("Checking for existing files")
     local_rail_files = [
-        file for file in os.listdir(data_directory) if file.endswith(".ZIP")
+        file
+        for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
+        if file.endswith(".zip") | file.endswith(".ZIP")
     ]
 
     # download anything new
