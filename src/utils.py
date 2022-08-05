@@ -740,21 +740,10 @@ def build_static_visual(folder_path, date, place, m):
         # We need the tempfile to avoid JS security issues.
         driver.get("file:///{path}".format(path=fname))
         driver.set_window_position(0, 0)
-        driver.set_window_size(1920, 1080)
+        driver.set_window_size(1680, 1050)
         time.sleep(5)
         img_data = driver.get_screenshot_as_png()
         driver.quit()
 
     img = Image.open(io.BytesIO(img_data))
     img.save(os.path.join(folder_path, png_filename))
-    # hti = Html2Image(
-    #     custom_flags=[
-    #         "--virtual-time-budget=250",
-    #         "--hide-scrollbars",
-    #     ],
-    #     output_path=folder_path,
-    # )
-
-    # hti.screenshot(html_str=html_str, save_as=png_filename)
-
-    # del hti

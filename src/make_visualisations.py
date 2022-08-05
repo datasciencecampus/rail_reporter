@@ -130,18 +130,31 @@ def main(
     logger.info("Built GB static visual.")
 
     bboxes = {
-        "midlands": [(52.0564, -2.7160), (52.6369, -1.1398)],
-        "london": [(51.0076, -0.9390), (51.8959, 0.8919)],
-        "northwest": [(53.1839, -3.4250), (53.9614, -1.0739)],
-        "northengland": [(54.4035, -3.2326), (55.0393, 0)],
-        "scotland": [(55.6800, -4.5136), (56.1745, -3.0308)],
+        "midlands": {
+            "bbox": [(52.0564, -2.7160), (52.6369, -1.1398)],
+            "padding": (-60, -60),
+        },
+        "london": {
+            "bbox": [(51.0076, -0.9390), (51.8959, 0.8919)],
+            "padding": (-90, 90),
+        },
+        "northwest": {
+            "bbox": [(53.1839, -3.4250), (53.9614, -1.0739)],
+            "padding": (-80, -80),
+        },
+        "northengland": {
+            "bbox": [(54.4035, -3.2326), (55.0393, 0)],
+            "padding": (-50, -50),
+        },
+        "scotland": {
+            "bbox": [(55.6800, -4.5136), (56.1745, -3.0308)],
+            "padding": (-30, -30),
+        },
     }
     for place in bboxes.keys():
         logger.info(f"Building {place} static visual...")
-        m.fit_bounds(bboxes[place])
-        bbox_html = m.get_root().render()
+        m.fit_bounds(bboxes[place]["bbox"], padding=bboxes[place]["padding"])
         build_static_visual(working_directory, date, place, m)
-        del bbox_html
         logger.info(f"Built {place} static visual.")
 
     logger.info("Make visualisations completed!")
