@@ -139,6 +139,8 @@ credential*.json
 data/external/atoc/*
 data/external/geography/*
 output/*
+outputs/*
+progress.json
 
 # images
 src/images/*
