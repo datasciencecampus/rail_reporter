@@ -1,5 +1,17 @@
 #!/bin/bash
 
-# Will script execution of the pipeline
+# Add this to PATH, makes source, direnv available
+export PATH="/usr/local/bin:$PATH"
 
-./src/clean_railfeed_zip.sh -d ./data -f RJTTF449
+# Change to project directory
+cd ~/GitHub/rail_reporter
+
+# Activate venv
+source env/bin/activate
+
+# direnv doesn't play nice with automation, load manually instead
+source ~/GitHub/rail_reporter/.envrc
+source ~/GitHub/rail_reporter/.secrets
+
+# Run process
+python run.py

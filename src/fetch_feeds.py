@@ -1,4 +1,5 @@
 import os
+import json
 import click
 import logging
 import paramiko
@@ -8,13 +9,15 @@ from datetime import datetime
 
 @click.command()
 @click.argument("feed_type")
-def main(feed_type: str):
+@click.argument("data_directory")
+def main(feed_type: str, data_directory: str):
     """
     Handles connecting to DTD SFTP rail data feed, and fetching latest, or all
     available.
 
     Arguments:
         feed_type -- Name of feed/directory to download from, on SFTP server
+        data_directory -- Directory to save files to (must already exist)
     """
     logger = logging.getLogger(__name__)
     logger.info(f"Fetching {feed_type}")
@@ -37,22 +40,21 @@ def main(feed_type: str):
     logger.info("Checking for existing files")
     local_rail_files = [
         file
-        for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL"))
-        if file.endswith(".zip")
+        for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
+        if file.endswith(".zip") | file.endswith(".ZIP")
     ]
 
     # download anything new
     to_download = set(remote_rail_files).difference(local_rail_files)
+
     if len(to_download) > 0:
         for file in to_download:
             sftp.get(
                 os.path.join(f"./{feed_type}", file),
-                os.path.join(os.getenv("DIR_DATA_EXTERNAL"), file),
+                os.path.join(data_directory, file),
             )
             logger.info(f"Retrieved {file}")
         logger.info(f"Retrieved {len(to_download)} files")
-    else:
-        logger.info(f"No new rail data files in feed {feed_type} detected")
 
     # Shut down if left open
     if sftp:
@@ -60,7 +62,17 @@ def main(feed_type: str):
     if transport:
         transport.close()
 
-    return None
+    # Return what happened
+    if len(to_download) > 0:
+        # Report via json
+        with open("progress.json", "w") as f:
+            json.dump({"new_files": True}, f)
+        return True
+    else:
+        logger.info(f"No new rail data files in feed {feed_type} detected")
+        with open("progress.json", "w") as f:
+            json.dump({"new_files": False}, f)
+        return False
 
 
 if __name__ == "__main__":
@@ -70,7 +82,7 @@ if __name__ == "__main__":
         level=logging.INFO,
         format=log_fmt,
         filename=os.path.join(
-            os.getenv("DIR_LOG"), f"process {str(datetime.now())}.log"
+            os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
     )
 
