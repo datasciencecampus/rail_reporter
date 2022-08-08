@@ -270,6 +270,10 @@ def find_station_tiplocs(stops_file_path):
     # rename tube stations to common names to avoid confusion with core rail stations
     tiploc_clean["Station_Name"][tiploc_clean["TIPLOC"]=="LNDNBDC"] = "London Bridge"
     tiploc_clean["Station_Name"][tiploc_clean["TIPLOC"]=="VICTRIE"] = "London Victoria"
+    tiploc_clean["Station_Name"][tiploc_clean["TIPLOC"]=="WIMBLDN"] = "Wimbledon"
+    # Clapham Junction also split across 3 TIPLOCs
+
+
 
     return tiploc_clean
 
