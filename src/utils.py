@@ -863,6 +863,8 @@ def build_template_middle_publication(colour_scale, day=None):
             <p style="line-height:25%"><font size ="1">the number of timetabled services.</font></p>
             <p style="line-height:25%"><font size ="1"><br></p>
             <p style="line-height:25%"><font size ="1"><strong>Build Date:</strong> {}</font></p>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <a href="https://datasciencecampus.ons.gov.uk/"><img src="https://avatars.githubusercontent.com/u/25666867?s=280&v=4" alt="Data Science Campus Logo" width="25" height="25"/></a>
             """.format(
             colour_scale[0],
             colour_scale[1],
