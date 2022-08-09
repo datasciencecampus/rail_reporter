@@ -8,11 +8,11 @@ import pandas as pd
 from pyprojroot import here
 
 from utils import (
-    add_build_date,
+    # add_build_date,
     add_timestamped_geojson,
     add_folium_times,
-    add_logo,
-    add_singleday_display_date,
+    # add_logo,
+    # add_singleday_display_date,
     build_base_map,
     build_features,
     build_macro_legend_publication,
@@ -156,13 +156,16 @@ def main(
     m = add_timestamped_geojson(m, features)
     logger.info("Added TimestampedGeoJson object to map.")
 
-    m = add_logo(m)
-    logger.info("Added logo to map.")
+    # m = add_logo(m)
+    # logger.info("Added logo to map.")
 
-    m = add_build_date(m)
-    logger.info("Added build date to map.")
+    # m = add_build_date(m)
+    # logger.info("Added build date to map.")
 
-    macro = build_macro_legend_publication(colour_scale)
+    if single_day:
+        macro = build_macro_legend_publication(colour_scale, start_date)
+    else:
+        macro = build_macro_legend_publication(colour_scale, None)
     m.get_root().add_child(macro)
     logger.info("Legend macro built and added.")
 
@@ -179,7 +182,7 @@ def main(
     else:
         logger.info("Saving single day visual...")
 
-        m = add_singleday_display_date(m, start_date)
+        # m = add_singleday_display_date(m, start_date)
 
         vis_filepath = os.path.join(
             working_directory,

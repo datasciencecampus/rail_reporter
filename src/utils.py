@@ -845,29 +845,69 @@ def build_static_visual(folder_path, date, place, m):
     img.save(os.path.join(folder_path, png_filename))
 
 
-def build_template_middle_publication(colour_scale):
-    template_middle = """
-        <li><span style='background:{};opacity:0.5;'></span>0%</li>
-        <li><span style='background:{};opacity:0.5;'></span>(0%, 50%)</li>
-        <li><span style='background:{};opacity:0.5;'></span>[50%, 60%)</li>
-        <li><span style='background:{};opacity:0.5;'></span>[60%, 70%)</li>
-        <li><span style='background:{};opacity:0.5;'></span>[70%, 80%)</li>
-        <li><span style='background:{};opacity:0.5;'></span>[80%, 90%)</li>
-        <li><span style='background:{};opacity:0.5;'></span>[90%, 100%)</li>
-        <li><span style='background:{};opacity:0.5;'></span>≥100%</li>""".format(
-        colour_scale[0],
-        colour_scale[1],
-        colour_scale[2],
-        colour_scale[3],
-        colour_scale[4],
-        colour_scale[5],
-        colour_scale[6],
-        colour_scale[7],
-    )
+def build_template_middle_publication(colour_scale, day=None):
+
+    if day is None:
+        template_middle = """
+            <li><span style='background:{};opacity:0.5;'></span>0%</li>
+            <li><span style='background:{};opacity:0.5;'></span>(0%, 50%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[50%, 60%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[60%, 70%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[70%, 80%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[80%, 90%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[90%, 100%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>≥100%</li>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Note:</strong> The area of each circular</font></p>
+            <p style="line-height:25%"><font size ="1">marker is scaled proportionately by</font></p>
+            <p style="line-height:25%"><font size ="1">the number of timetabled services.</font></p>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Build Date:</strong> {}</font></p>
+            """.format(
+            colour_scale[0],
+            colour_scale[1],
+            colour_scale[2],
+            colour_scale[3],
+            colour_scale[4],
+            colour_scale[5],
+            colour_scale[6],
+            colour_scale[7],
+            datetime.now().date().strftime("%Y-%m-%d"),
+        )
+    else:
+        template_middle = """
+            <li><span style='background:{};opacity:0.5;'></span>0%</li>
+            <li><span style='background:{};opacity:0.5;'></span>(0%, 50%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[50%, 60%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[60%, 70%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[70%, 80%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[80%, 90%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[90%, 100%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>≥100%</li>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Note:</strong> The area of each circular</font></p>
+            <p style="line-height:25%"><font size ="1">marker is scaled proportionately by</font></p>
+            <p style="line-height:25%"><font size ="1">the number of timetabled services.</font></p>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Displaying:</strong> {}</font></p>
+            <p style="line-height:25%"><font size ="1"><strong>Build Date:</strong> {}</font></p>
+            """.format(
+            colour_scale[0],
+            colour_scale[1],
+            colour_scale[2],
+            colour_scale[3],
+            colour_scale[4],
+            colour_scale[5],
+            colour_scale[6],
+            colour_scale[7],
+            day.strftime("%Y-%m-%d"),
+            datetime.now().date().strftime("%Y-%m-%d"),
+        )
+
     return template_middle
 
 
-def build_macro_legend_publication(colour_scale):
+def build_macro_legend_publication(colour_scale, day):
 
     template_start = """
     {% macro html(this, kwargs) %}
@@ -909,10 +949,6 @@ def build_macro_legend_publication(colour_scale):
     """
 
     template_end = """
-        <p style="line-height:25%"><font size ="1"><br></p>
-        <p style="line-height:25%"><font size ="1"><strong>Note:</strong> The area of each circular</font></p>
-        <p style="line-height:25%"><font size ="1">marker is scaled proportionately by</font></p>
-        <p style="line-height:25%"><font size ="1">the number of timetabled services.</font></p>
         <button id="hide">Hide</button>
         <button id="show">Show</button>
     </ul>
@@ -963,7 +999,7 @@ def build_macro_legend_publication(colour_scale):
     </style>
     {% endmacro %}"""
 
-    template_middle = build_template_middle_publication(colour_scale)
+    template_middle = build_template_middle_publication(colour_scale, day)
 
     template = template_start + template_middle + template_end
     macro = MacroElement()
