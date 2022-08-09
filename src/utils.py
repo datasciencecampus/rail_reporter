@@ -880,22 +880,20 @@ def build_macro_legend_publication(colour_scale):
     <title></title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-    $( function() {
-        $( "#maplegend" ).draggable({
-                        start: function (event, ui) {
-                            $(this).css({
-                                right: "auto",
-                                top: "auto",
-                                bottom: "auto"
-                            });
-                        }
-                    });
+    $(document).ready(function(){
+    $("#hide").click(function(){
+        $("p").hide();
+        $("li").hide();
+        $("#maplegendtitle").hide();
     });
-
+    $("#show").click(function(){
+        $("p").show();
+        $("li").show();
+        $("#maplegendtitle").show();
+    });
+    });
     </script>
     </head>
     <body>
@@ -905,7 +903,7 @@ def build_macro_legend_publication(colour_scale):
         style='position: absolute; z-index:9999; border:2px solid grey; background-color:rgba(255, 255, 255, 0.8);
         border-radius:6px; padding: 10px; font-size:14px; right: 10px; bottom: 20px;'>
 
-    <div class='legend-title'>Percentage of Timetabled<br>Services Running</div>
+    <div id='maplegendtitle' class='legend-title'>Percentage of Timetabled<br>Services Running</div>
     <div class='legend-scale'>
     <ul class='legend-labels'>
     """
@@ -915,6 +913,8 @@ def build_macro_legend_publication(colour_scale):
         <p style="line-height:25%"><font size ="1"><strong>Note:</strong> The area of each circular</font></p>
         <p style="line-height:25%"><font size ="1">marker is scaled proportionately by</font></p>
         <p style="line-height:25%"><font size ="1">the number of timetabled services.</font></p>
+        <button id="hide">Hide</button>
+        <button id="show">Show</button>
     </ul>
     </div>
     </div>
