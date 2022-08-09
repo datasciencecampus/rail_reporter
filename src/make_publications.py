@@ -12,6 +12,7 @@ from utils import (
     add_timestamped_geojson,
     add_folium_times,
     add_logo,
+    add_singleday_display_date,
     build_base_map,
     build_features,
     build_macro_legend_publication,
@@ -177,6 +178,9 @@ def main(
         logger.info(f"Timeseries visual saved {vis_filepath}")
     else:
         logger.info("Saving single day visual...")
+
+        m = add_singleday_display_date(m, start_date)
+
         vis_filepath = os.path.join(
             working_directory,
             f"publication_singleday_{start_date_out}.html",

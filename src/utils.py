@@ -969,3 +969,29 @@ def build_macro_legend_publication(colour_scale):
     macro = MacroElement()
     macro._template = Template(template)
     return macro
+
+
+def add_singleday_display_date(m, singleday_date):
+
+    build_date_filepath = os.path.join(
+        here(), "src", "images", "build_singleday_text.png"
+    )
+
+    W, H = (200, 200)
+    im = Image.new("RGBA", (W, H))
+    draw = ImageDraw.Draw(im)
+    msg = "Displaying data for {}".format(singleday_date.strftime("%Y-%m-%d"))
+    fnt = ImageFont.truetype("/Library/Fonts/Arial.ttf", 14)
+    _, _, w, h = fnt.getbbox(msg)
+    draw.text((0, 0), msg, font=fnt, fill=(0, 0, 0))
+    im.crop((0, 0, w, h)).save(build_date_filepath, "PNG")
+
+    with open(build_date_filepath, "rb") as lf:
+        # open in binary mode, read bytes, encode, decode obtained bytes as utf-8 string
+        b64_content = base64.b64encode(lf.read()).decode("utf-8")
+
+    FloatImage(
+        "data:image/png;base64,{}".format(b64_content), bottom=2.5, left=1
+    ).add_to(m)
+
+    return m
