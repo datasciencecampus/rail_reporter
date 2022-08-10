@@ -36,12 +36,12 @@ def main():
     # )
 
     # build single day visual for 20220813
-    # os.system(
-    #     f"python ./src/make_publications.py --working_directory {OUT_DIR}"
-    #     "/20220810 --csv_input_filename "
-    #     "full_uk_disruption_summary_multiday_start_20220810_30days.csv  "
-    #     "--start_date 13082022"
-    # )
+    os.system(
+        f"python ./src/make_publications.py --working_directory {OUT_DIR}"
+        "/20220810 --csv_input_filename "
+        "full_uk_disruption_summary_multiday_start_20220810_30days.csv  "
+        "--start_date 13082022"
+    )
 
     # # build timeseries visual for 20220811 to 20220831
     os.system(

@@ -499,7 +499,7 @@ def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
         <tr>
         <td style="background-color: """
         + left_col_color
-        + """;"><span style="color: #ffffff;">TIPLOC code</span></td>
+        + """;"><span style="color: #ffffff;">TIPLOC Code</span></td>
         <td style="width: 150px;background-color: """
         + right_col_color
         + """;">{}</td>""".format(tiploc)
@@ -526,7 +526,7 @@ def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
         <tr>
         <td style="background-color: """
         + left_col_color
-        + """;"><span style="color: #ffffff;">Percentage Running</span></td>
+        + """;"><span style="color: #ffffff;">Proportion Scheduled</span></td>
         <td style="width: 150px;background-color: """
         + right_col_color
         + """;">{:.1f}%</td>""".format(percentage)
@@ -612,7 +612,7 @@ def build_legend_macro():  # noqa: E501
         style='position: absolute; z-index:9999; border:2px solid grey; background-color:rgba(255, 255, 255, 0.8);
         border-radius:6px; padding: 10px; font-size:14px; right: 10px; bottom: 200px;'>
 
-    <div class='legend-title'>Percentage of Timetabled<br>Services Running</div>
+    <div class='legend-title'>Proportion Scheduled</div>
     <div class='legend-scale'>
     <ul class='legend-labels'>
         <li><span style='background:#000000;opacity:0.5;'></span>0%</li>
@@ -965,7 +965,7 @@ def build_macro_legend_publication(colour_scale, day):
         style='position: absolute; z-index:9999; border:2px solid grey; background-color:rgba(255, 255, 255, 0.8);
         border-radius:6px; padding: 10px; font-size:14px; right: 10px; bottom: 20px;'>
 
-    <div id='maplegendtitle' class='legend-title'>Percentage of Timetabled<br>Services Running</div>
+    <div id='maplegendtitle' class='legend-title'>Proportion Scheduled</div>
     <div class='legend-scale'>
     <ul class='legend-labels'>
     """
