@@ -148,9 +148,19 @@ def main(
     features = build_features(gp_df, colour_scale=colour_scale)
     logger.info("Built features.")
 
-    m = build_base_map(
-        full_screen, mini_map, add_geocoder, measure_control, publication=True
-    )
+    if single_day:
+        m = build_base_map(
+            full_screen,
+            mini_map,
+            add_geocoder,
+            measure_control,
+            publication=True,
+            default_view="OSM",
+        )
+    else:
+        m = build_base_map(
+            full_screen, mini_map, add_geocoder, measure_control, publication=True
+        )
     logger.info("Built base map")
 
     m = add_timestamped_geojson(m, features)

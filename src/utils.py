@@ -719,6 +719,7 @@ def build_base_map(
     add_geocoder: bool,
     measure_control: bool,
     publication: bool = False,
+    default_view: str = "CartoDB",
 ):
 
     if not publication:
@@ -729,16 +730,29 @@ def build_base_map(
     else:
         m = folium.Map(tiles=None)
 
-        folium.TileLayer(
-            tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-            attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            name="Default (CartoDB)",
-        ).add_to(m)
+        if default_view == "CartoDB":
+            folium.TileLayer(
+                tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                name="Default (CartoDB)",
+            ).add_to(m)
 
-        folium.TileLayer(
-            tiles="openstreetmap",
-            name="Open Street Map",
-        ).add_to(m)
+            folium.TileLayer(
+                tiles="openstreetmap",
+                name="Open Street Map",
+            ).add_to(m)
+
+        else:
+            folium.TileLayer(
+                tiles="openstreetmap",
+                name="Default (Open Street Map)",
+            ).add_to(m)
+
+            folium.TileLayer(
+                tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                name="CartoDB",
+            ).add_to(m)
 
         folium.LayerControl().add_to(m)
 

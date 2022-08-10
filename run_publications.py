@@ -23,31 +23,31 @@ def main():
 
     # build timetable for single day visual (20220813) and timeseries (11 to 31)
     # os.system(
-    #     f"python ./src/build_timetable.py RJTTF461.zip {ATOC_DIR} {OUT_DIR} "
-    #     "--dump_date 09082022 --start_date 09082022"
+    #     f"python ./src/build_timetable.py RJTTF462.zip {ATOC_DIR} {OUT_DIR} "
+    #     "--dump_date 10082022 --start_date 10082022"
     # )
 
-    # build single day visual for 20220806
-    os.system(
-        f"python ./src/make_publications.py --working_directory {OUT_DIR}"
-        "/20220806 --csv_input_filename "
-        "full_uk_disruption_summary_multiday_start_20220806_30days.csv  "
-        "--start_date 06082022"
-    )
+    # # build single day visual for 20220806
+    # os.system(
+    #     f"python ./src/make_publications.py --working_directory {OUT_DIR}"
+    #     "/20220806 --csv_input_filename "
+    #     "full_uk_disruption_summary_multiday_start_20220806_30days.csv  "
+    #     "--start_date 06082022"
+    # )
 
     # build single day visual for 20220813
-    os.system(
-        f"python ./src/make_publications.py --working_directory {OUT_DIR}"
-        "/20220809 --csv_input_filename "
-        "full_uk_disruption_summary_multiday_start_20220809_30days.csv  "
-        "--start_date 13082022"
-    )
+    # os.system(
+    #     f"python ./src/make_publications.py --working_directory {OUT_DIR}"
+    #     "/20220810 --csv_input_filename "
+    #     "full_uk_disruption_summary_multiday_start_20220810_30days.csv  "
+    #     "--start_date 13082022"
+    # )
 
-    # build timeseries visual for 20220811 to 20220831
+    # # build timeseries visual for 20220811 to 20220831
     os.system(
         f"python ./src/make_publications.py --working_directory {OUT_DIR}"
-        "/20220809 --csv_input_filename "
-        "full_uk_disruption_summary_multiday_start_20220809_30days.csv  "
+        "/20220810 --csv_input_filename "
+        "full_uk_disruption_summary_multiday_start_20220810_30days.csv  "
         "--start_date 11082022 --end_date 31082022"
     )
 
