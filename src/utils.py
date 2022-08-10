@@ -941,16 +941,20 @@ def build_macro_legend_publication(colour_scale, day):
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
     $(document).ready(function(){
-    $("#hide").click(function(){
-        $("p").hide();
-        $("li").hide();
-        $("#maplegendtitle").hide();
-    });
-    $("#show").click(function(){
-        $("p").show();
-        $("li").show();
-        $("#maplegendtitle").show();
-    });
+        $("#hide").click(function(){
+            if ($("#hide").html() == "Hide"){
+                $("#hide").html('Show');
+                $("p").hide();
+                $("li").hide();
+                $("#maplegendtitle").hide();
+            }
+            else{
+                $("#hide").html('Hide');
+                $("p").show();
+                $("li").show();
+                $("#maplegendtitle").show();
+            }
+        });
     });
     </script>
     </head>
@@ -968,7 +972,6 @@ def build_macro_legend_publication(colour_scale, day):
 
     template_end = """
         <button id="hide">Hide</button>
-        <button id="show">Show</button>
     </ul>
     </div>
     </div>
