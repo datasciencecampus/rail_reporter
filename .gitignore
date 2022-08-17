@@ -138,7 +138,7 @@ credential*.json
 # atoc data
 data/external/atoc/*
 data/external/geography/*
-output/*
+outputs/*
 
 # images
 src/images/*

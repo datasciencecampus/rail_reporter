@@ -41,13 +41,21 @@ def main(
 
     Parameters
     ----------
-    zip_name : str
+    zip_name :
         Name of the ATOC zip file to build off (with .zip file extension).
+    data_directory :
+        Directory containing the ATOC data file
+    output_directory :
+        Directory to write results to
     dump_date : str
         Date string corresponding to the date the ATOC zip file was "dumped"
         in DDMMYYYY format.
-    date : str
-        Date string to filter ATOC data to in DDMMYYYY format.
+    start_date : str
+        Date string corresponding to the date from which to produce visuals
+        in DDMMYYYY format.
+    no_days: int
+        Number of days into the future from the start_date for which to produce
+        the visuals
     """
     logger = logging.getLogger(__name__)
 
@@ -125,10 +133,11 @@ def main(
 
         logger.info(f"Filtering to {date}...")
         cal_today = filter_to_date(calendar_df, date=date)
+        canc_today = filter_to_date(cancelled_df, date=date, cancellations=True)
         cal_times_today = filter_to_dft_time(cal_today)
 
         canc_today = filter_to_date_cancellations(
-            cal_times_today, cancelled_df, date=date
+            cal_times_today, canc_today, date=date
         )
 
         # filter permanent timetabled journeys attributed to this date
