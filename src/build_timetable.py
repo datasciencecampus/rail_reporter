@@ -13,6 +13,7 @@ from utils import (
     create_perm_and_new_df,
     cut_mca_to_size,
     filter_to_date,
+    filter_to_date_cancellations,
     filter_to_dft_time,
     find_station_tiplocs,
     unpack_atoc_data,
@@ -123,9 +124,12 @@ def main(
         logger.info(f"*** Running with date: {date}, day: {day} ***")
 
         logger.info(f"Filtering to {date}...")
-        canc_today = filter_to_date(cancelled_df, date=date, cancellations=True)
         cal_today = filter_to_date(calendar_df, date=date)
         cal_times_today = filter_to_dft_time(cal_today)
+
+        canc_today = filter_to_date_cancellations(
+            cal_times_today, cancelled_df, date=date
+        )
 
         # filter permanent timetabled journeys attributed to this date
         # (i.e. before any cancellations or exceptions)

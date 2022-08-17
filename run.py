@@ -17,6 +17,7 @@ OUT_DIR = os.getenv("DIR_OUTPUTS")
 def main():
 
     logger = logging.getLogger(__name__)
+    logger.info(" ------------------------------------------------------- ")
     logger.info("Running full process")
 
     # Fetch latest files
