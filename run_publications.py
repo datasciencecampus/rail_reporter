@@ -44,12 +44,34 @@ def main():
     # )
 
     # # build timeseries visual for 20220811 to 20220831
-    os.system(
-        f"python ./src/make_publications.py --working_directory {OUT_DIR}"
-        "/20220811 --csv_input_filename "
-        "full_uk_disruption_summary_multiday_start_20220811_30days.csv  "
-        "--start_date 11082022 --end_date 31082022"
-    )
+    # os.system(
+    #     f"python ./src/make_publications.py --working_directory {OUT_DIR}"
+    #     "/20220811 --csv_input_filename "
+    #     "full_uk_disruption_summary_multiday_start_20220811_30days.csv  "
+    #     "--start_date 11082022 --end_date 31082022"
+    # )
+
+    # build timetable for merge checking
+    # os.system(
+    #     f"python ./src/build_timetable.py RJTTF469.zip {ATOC_DIR} {OUT_DIR} "
+    #     "--dump_date 17082022 --start_date 17082022"
+    # )
+
+    # # build single day visual to check merge
+    # os.system(
+    #     f"python ./src/make_publications.py --working_directory {OUT_DIR}"
+    #     "/20220817 --csv_input_filename "
+    #     "full_uk_disruption_summary_multiday_start_20220817_30days.csv  "
+    #     "--start_date 17082022"
+    # )
+
+    # # build timeseries visual to check merge
+    # os.system(
+    #     f"python ./src/make_publications.py --working_directory {OUT_DIR}"
+    #     "/20220817 --csv_input_filename "
+    #     "full_uk_disruption_summary_multiday_start_20220817_30days.csv  "
+    #     "--start_date 17082022 --end_date 31082022"
+    # )
 
 
 if __name__ == "__main__":
