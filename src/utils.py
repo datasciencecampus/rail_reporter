@@ -411,6 +411,36 @@ def filter_to_date(journey_rows_df, date, cancellations=False):
     return output
 
 
+def filter_to_date_cancellations(calendar_df_filt_by_dft, cancelled_df, date):
+
+    # lookahead by one day
+    d1 = datetime.strptime(str(date), "%y%m%d").date()
+    d2 = d1 + timedelta(1)
+    weekday1 = calendar.day_name[d1.weekday()]
+    weekday2 = calendar.day_name[d2.weekday()]
+    day1 = list(
+        calendar_df_filt_by_dft["Identifier"][
+            (calendar_df_filt_by_dft["Stop"] == 1)
+            & (calendar_df_filt_by_dft["Time"] >= "0200")
+            & (calendar_df_filt_by_dft["Time"] <= "2359")
+            & (calendar_df_filt_by_dft[weekday1] == "1")
+        ].unique()
+    )
+    day2 = list(
+        calendar_df_filt_by_dft["Identifier"][
+            (calendar_df_filt_by_dft["Stop"] == 1)
+            & (calendar_df_filt_by_dft["Time"] < "0200")
+            & (calendar_df_filt_by_dft["Time"] >= "0000")
+            & (calendar_df_filt_by_dft[weekday2] == "1")
+        ].unique()
+    )
+    canc_today = cancelled_df[
+        ((cancelled_df["Identifier"].isin(day1)) & (cancelled_df[weekday1] == "1"))
+        | ((cancelled_df["Identifier"].isin(day2)) & (cancelled_df[weekday2] == "1"))
+    ]
+    return canc_today
+
+
 def filter_to_dft_time(
     today_rows_df,
 ):
