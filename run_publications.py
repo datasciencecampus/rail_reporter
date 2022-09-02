@@ -2,6 +2,9 @@ import logging
 import os
 from datetime import datetime
 
+from src.utils import breakout_DTD_filename
+
+
 LOG_DIR = os.getenv("DIR_LOG")
 ATOC_DIR = os.getenv("DIR_DATA_EXTERNAL_ATOC")
 OUT_DIR = os.getenv("DIR_OUTPUTS")
@@ -9,11 +12,39 @@ OUT_DIR = os.getenv("DIR_OUTPUTS")
 
 def main():
 
+    # --------------------------------------------------------------------------
+    # DEFAULT SCRIPTING FOR QUICK WORK
+    # --------------------------------------------------------------------------
+
     logger = logging.getLogger(__name__)
     logger.info("Running publications process...")
 
-    # # Fetch latest files
-    # os.system(f"python ./src/fetch_feeds.py timetable {ATOC_DIR}")
+    # Fetch latest files
+    os.system(f"python ./src/fetch_feeds.py timetable {ATOC_DIR}")
+
+    # Find all ATOC zips for FULL data, find most recent
+    files = [
+        breakout_DTD_filename(file)
+        for file in os.listdir(ATOC_DIR)
+        if ".ZIP" in file and file.startswith("RJTTF")
+    ]
+
+    logger.info(f"Found {len(files)} files")
+
+    # Order list by production number, pop latest (highest number)
+    files.sort(key=lambda d: d["number"])
+    latest = files.pop()
+    logger.info(f"Latest file: {latest['name']}")
+
+    # Build a single timetable from the latest data found and from today
+    os.system(f"python ./src/build_timetable.py {latest['name']} {ATOC_DIR} {OUT_DIR} ")
+
+    # Build a single (current-day) visualisation
+    os.system("python ./src/make_publications.py")
+
+    # --------------------------------------------------------------------------
+    # EXAMPLE SCRIPTING FOR SPECIFIC DATES/CONFIGS FOLLOW
+    # --------------------------------------------------------------------------
 
     # build timetable for single day visual - 20220806
     # os.system(

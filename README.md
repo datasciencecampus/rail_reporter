@@ -66,6 +66,17 @@ For a useful tool for composing cron schedules/instructions [see here](https://c
 
 - our cron schedule entry: `0 5 * * * cd <project_folder> && ./run.sh`
 
+## Run off publication
+
+Not frequently used, a wrapper script that simply regenerates the publication
+visualisations used in our blogs with the latest data, should they be needed.
+
+See the script `run_publications.py` itself to see examples of configs for
+running over specific time windows or with past data.
+
+```shell
+python run_publications.py
+```
 
 ## Running steps independently
 
