@@ -134,14 +134,14 @@ dmypy.json
 *.html
 *.geojson
 *.zip
-
+credential*.json
 
 # atoc data
 data/external/atoc/*
 data/external/geography/*
-
-# output foler
 output/*
+outputs/*
+progress.json
 
 # images
 src/images/*

@@ -6,48 +6,65 @@ from datetime import datetime, timedelta
 import click
 import pandas as pd
 import numpy as np
-from pyprojroot import here
 from pathlib import Path
+
 
 from utils import (
     create_perm_and_new_df,
     cut_mca_to_size,
     filter_to_date,
+    filter_to_date_cancellations,
     filter_to_dft_time,
     find_station_tiplocs,
-    get_most_recent_file,
     unpack_atoc_data,
+    download_big_file,
 )
 
 
 @click.command()
-@click.option("--zip_name", default=None, type=str)
+@click.argument("zip_name")
+@click.argument("data_directory")
+@click.argument("output_directory")
 @click.option("--dump_date", default=None, type=str)
 @click.option("--start_date", default=None, type=str)
 @click.option("--no_days", default=30, type=int)
-def main(zip_name: str, dump_date: str, start_date: str, no_days: int):
+def main(
+    zip_name: str,
+    data_directory: str,
+    output_directory: str,
+    dump_date: str,
+    start_date: str,
+    no_days: int,
+):
     """
     Handles building and saving timetable data for a daily ATOC feed
 
     Parameters
     ----------
-    zip_name : str
+    zip_name :
         Name of the ATOC zip file to build off (with .zip file extension).
+    data_directory :
+        Directory containing the ATOC data file
+    output_directory :
+        Directory to write results to
     dump_date : str
         Date string corresponding to the date the ATOC zip file was "dumped"
         in DDMMYYYY format.
-    date : str
-        Date string to filter ATOC data to in DDMMYYYY format.
+    start_date : str
+        Date string corresponding to the date from which to produce visuals
+        in DDMMYYYY format.
+    no_days: int
+        Number of days into the future from the start_date for which to produce
+        the visuals
     """
     logger = logging.getLogger(__name__)
 
-    if zip_name is None:
-        atoc_folder_path = os.path.join(here(), "data", "external", "atoc")
-        zip_name = get_most_recent_file(atoc_folder_path)
-        logger.info(
-            f'Setting `zip_name` to "{zip_name}" (latest file) automatically'
-            " since the optional argument was not set."
-        )
+    # if zip_name is None:
+    #     zip_name = get_most_recent_file(data_directory)
+    #     logger.info(
+    #         f'Setting `zip_name` to "{zip_name}" (latest file) automatically'
+    #         " since the optional argument was not set."
+    #     )
 
     # set to today if no dump_date is provided
     if dump_date is None:
@@ -79,21 +96,18 @@ def main(zip_name: str, dump_date: str, start_date: str, no_days: int):
         dates.append(start_date + timedelta(days=i))
     logger.info(f"Days to analyse = {dates}")
 
-    external_folder_path = os.path.join(here(), "data", "external")
-    outputs_folder_path = os.path.join(here(), "output")
-
-    # retrieve station tiplocs
-    tiploc_filepath = os.path.join(here(), "data", "external", "geography", "Stops.csv")
-    station_tiplocs = find_station_tiplocs(tiploc_filepath)
+    # Download file if not already exists
+    download_big_file(os.getenv("URL_STOPS"), "Stops.csv", data_directory)
+    station_tiplocs = find_station_tiplocs(os.path.join(data_directory, "Stops.csv"))
     logger.info("Tiplocs retrieved from Stops.csv/tiploc file...")
 
     # unpack the atoc data
-    unpack_atoc_data(external_folder_path, zip_name, dump_date)
+    unpack_atoc_data(data_directory, zip_name, dump_date)
     logger.info(f'"{zip_name}" unziped.')
 
     # remove header rows (non-timetable data)
     df = cut_mca_to_size(
-        external_folder_path,
+        data_directory,
         zip_name.replace(".zip", "").replace(".ZIP", ""),
         dump_date,
     )
@@ -118,9 +132,13 @@ def main(zip_name: str, dump_date: str, start_date: str, no_days: int):
         logger.info(f"*** Running with date: {date}, day: {day} ***")
 
         logger.info(f"Filtering to {date}...")
-        canc_today = filter_to_date(cancelled_df, date=date, cancellations=True)
         cal_today = filter_to_date(calendar_df, date=date)
+        canc_today = filter_to_date(cancelled_df, date=date, cancellations=True)
         cal_times_today = filter_to_dft_time(cal_today)
+
+        canc_today = filter_to_date_cancellations(
+            cal_times_today, canc_today, date=date
+        )
 
         # filter permanent timetabled journeys attributed to this date
         # (i.e. before any cancellations or exceptions)
@@ -164,8 +182,6 @@ def main(zip_name: str, dump_date: str, start_date: str, no_days: int):
             on="TIPLOC",
             how="inner",
         )
-        # final_df.to_csv(os.path.join(
-        # outputs_folder_path, f"full_uk_schedule_{date}.csv"))
         logger.info(f"Full schedule for {date} built")
 
         scheduled = final_df["TIPLOC"].value_counts().reset_index()
@@ -204,19 +220,19 @@ def main(zip_name: str, dump_date: str, start_date: str, no_days: int):
     # create a dedicated folder inside the outputs dir
     dedicated_output_folder_name = str(start_date).replace("-", "")
     logger.info(f"Making dedicated folder {dedicated_output_folder_name}")
-    Path(os.path.join(outputs_folder_path, dedicated_output_folder_name)).mkdir(
+    Path(os.path.join(output_directory, dedicated_output_folder_name)).mkdir(
         parents=True, exist_ok=True
     )
 
     # save to csv in the dedicated directory
     csv_filepath = os.path.join(
-        outputs_folder_path, dedicated_output_folder_name, output_file_name
+        output_directory, dedicated_output_folder_name, output_file_name
     )
     out_df.to_csv(csv_filepath)
     logger.info(f"out_df exported to {csv_filepath}")
 
     # tidyup - remove unzipped atoc folder
-    shutil.rmtree(os.path.join(external_folder_path, "atoc", f"atoc_{dump_date}"))
+    shutil.rmtree(os.path.join(data_directory, f"atoc_{dump_date}"))
     logger.info(f"Tidy up: removed atoc_{dump_date} folder.")
 
     return None
@@ -231,7 +247,6 @@ if __name__ == "__main__":
         filename=os.path.join(
             os.getenv("DIR_LOG"), f"{str(datetime.now().date())}.log"
         ),
-        filemode="a",
     )
 
     main()
