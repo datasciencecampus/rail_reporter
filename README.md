@@ -20,6 +20,8 @@ to us overnight each day, from which we generate the visuals.
 
 ## Setup
 
+We expect our code to work on OSX and Linux systems.
+
 ### Get access to data
 
 The Rail Delivery Group provides access to this data (if approved) through SFTP
