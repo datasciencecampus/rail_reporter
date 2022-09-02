@@ -356,6 +356,7 @@ def find_station_tiplocs(stops_file_path):
     tiploc_clean.loc[
         tiploc_clean["TIPLOC"] == "VICTRIE", "Station_Name"
     ] = "London Victoria"
+    tiploc_clean.loc[tiploc_clean["TIPLOC"] == "WIMBLDN", "Station_Name"] = "Wimbledon"
 
     return tiploc_clean
 
