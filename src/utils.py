@@ -529,7 +529,7 @@ def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
         <tr>
         <td style="background-color: """
         + left_col_color
-        + """;"><span style="color: #ffffff;">TIPLOC code</span></td>
+        + """;"><span style="color: #ffffff;">TIPLOC Code</span></td>
         <td style="width: 150px;background-color: """
         + right_col_color
         + """;">{}</td>""".format(tiploc)
@@ -556,7 +556,7 @@ def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
         <tr>
         <td style="background-color: """
         + left_col_color
-        + """;"><span style="color: #ffffff;">Percentage Running</span></td>
+        + """;"><span style="color: #ffffff;">Proportion Scheduled</span></td>
         <td style="width: 150px;background-color: """
         + right_col_color
         + """;">{:.1f}%</td>""".format(percentage)
@@ -570,23 +570,36 @@ def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
     return html
 
 
-def get_colour(val):
+def get_colour(val, colour_scale: list = None):
+
+    if colour_scale is None:
+        colour_scale = [
+            "#000000",
+            "#8b0000",
+            "#ff0000",
+            "#ff0066",
+            "#ff00cc",
+            "#cc00ff",
+            "#6600ff",
+            "#0000ff",
+        ]
+
     if val == 0:
-        return "#000000"
+        return colour_scale[0]
     if val < 50:
-        return "#8b0000"
+        return colour_scale[1]
     elif (val >= 50) & (val < 60):
-        return "#ff0000"
+        return colour_scale[2]
     elif (val >= 60) & (val < 70):
-        return "#ff0066"
+        return colour_scale[3]
     elif (val >= 70) & (val < 80):
-        return "#ff00cc"
+        return colour_scale[4]
     elif (val >= 80) & (val < 90):
-        return "#cc00ff"
+        return colour_scale[5]
     elif (val >= 90) & (val < 100):
-        return "#6600ff"
+        return colour_scale[6]
     elif val >= 100:
-        return "#0000ff"
+        return colour_scale[7]
     else:
         return "#808080"
 
@@ -629,7 +642,7 @@ def build_legend_macro():  # noqa: E501
         style='position: absolute; z-index:9999; border:2px solid grey; background-color:rgba(255, 255, 255, 0.8);
         border-radius:6px; padding: 10px; font-size:14px; right: 10px; bottom: 200px;'>
 
-    <div class='legend-title'>Percentage of Timetabled<br>Services Running</div>
+    <div class='legend-title'>Proportion Scheduled</div>
     <div class='legend-scale'>
     <ul class='legend-labels'>
         <li><span style='background:#000000;opacity:0.5;'></span>0%</li>
@@ -693,7 +706,7 @@ def build_legend_macro():  # noqa: E501
     return macro
 
 
-def build_features(gp_df):
+def build_features(gp_df, colour_scale=None):
 
     features = [
         {
@@ -715,7 +728,10 @@ def build_features(gp_df):
                 "style": {"color": ""},
                 "icon": "circle",
                 "iconstyle": {
-                    "fillColor": get_colour(row["pct_timetabled_services_running"]),
+                    "fillColor": get_colour(
+                        row["pct_timetabled_services_running"],
+                        colour_scale=colour_scale,
+                    ),
                     "fillOpacity": 0.5,
                     "radius": row["radius"],
                 },
@@ -728,13 +744,47 @@ def build_features(gp_df):
 
 
 def build_base_map(
-    full_screen: bool, mini_map: bool, add_geocoder: bool, measure_control: bool
+    full_screen: bool,
+    mini_map: bool,
+    add_geocoder: bool,
+    measure_control: bool,
+    publication: bool = False,
+    default_view: str = "CartoDB",
 ):
 
-    m = folium.Map(
-        tiles="openstreetmap",
-        max_bounds=True,
-    )
+    if not publication:
+        m = folium.Map(
+            tiles="openstreetmap",
+            max_bounds=True,
+        )
+    else:
+        m = folium.Map(tiles=None)
+
+        if default_view == "CartoDB":
+            folium.TileLayer(
+                tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                name="Default (CartoDB)",
+            ).add_to(m)
+
+            folium.TileLayer(
+                tiles="openstreetmap",
+                name="Open Street Map",
+            ).add_to(m)
+
+        else:
+            folium.TileLayer(
+                tiles="openstreetmap",
+                name="Default (Open Street Map)",
+            ).add_to(m)
+
+            folium.TileLayer(
+                tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                name="CartoDB",
+            ).add_to(m)
+
+        folium.LayerControl().add_to(m)
 
     if full_screen:
         m.add_child(Fullscreen())
@@ -837,3 +887,198 @@ def build_static_visual(folder_path, date, place, m):
 
     img = Image.open(io.BytesIO(img_data))
     img.save(os.path.join(folder_path, png_filename))
+
+
+def build_template_middle_publication(colour_scale, day=None):
+
+    if day is None:
+        template_middle = """
+            <li><span style='background:{};opacity:0.5;'></span>0%</li>
+            <li><span style='background:{};opacity:0.5;'></span>(0%, 50%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[50%, 60%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[60%, 70%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[70%, 80%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[80%, 90%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[90%, 100%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>≥100%</li>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Note:</strong> The area of each circular</font></p>
+            <p style="line-height:25%"><font size ="1">marker is scaled proportionately by</font></p>
+            <p style="line-height:25%"><font size ="1">the number of timetabled services.</font></p>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Build Date:</strong> {}</font></p>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <a href="https://datasciencecampus.ons.gov.uk/"><img src="https://avatars.githubusercontent.com/u/25666867?s=280&v=4" alt="Data Science Campus Logo" width="25" height="25"/></a>
+            """.format(
+            colour_scale[0],
+            colour_scale[1],
+            colour_scale[2],
+            colour_scale[3],
+            colour_scale[4],
+            colour_scale[5],
+            colour_scale[6],
+            colour_scale[7],
+            datetime.now().date().strftime("%Y-%m-%d"),
+        )
+    else:
+        template_middle = """
+            <li><span style='background:{};opacity:0.5;'></span>0%</li>
+            <li><span style='background:{};opacity:0.5;'></span>(0%, 50%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[50%, 60%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[60%, 70%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[70%, 80%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[80%, 90%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>[90%, 100%)</li>
+            <li><span style='background:{};opacity:0.5;'></span>≥100%</li>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Note:</strong> The area of each circular</font></p>
+            <p style="line-height:25%"><font size ="1">marker is scaled proportionately by</font></p>
+            <p style="line-height:25%"><font size ="1">the number of timetabled services.</font></p>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <p style="line-height:25%"><font size ="1"><strong>Displaying:</strong> {}</font></p>
+            <p style="line-height:25%"><font size ="1"><strong>Build Date:</strong> {}</font></p>
+            <p style="line-height:25%"><font size ="1"><br></p>
+            <a href="https://datasciencecampus.ons.gov.uk/"><img src="https://avatars.githubusercontent.com/u/25666867?s=280&v=4" alt="Data Science Campus Logo" width="25" height="25"/></a>
+            """.format(
+            colour_scale[0],
+            colour_scale[1],
+            colour_scale[2],
+            colour_scale[3],
+            colour_scale[4],
+            colour_scale[5],
+            colour_scale[6],
+            colour_scale[7],
+            day.strftime("%Y-%m-%d"),
+            datetime.now().date().strftime("%Y-%m-%d"),
+        )
+
+    return template_middle
+
+
+def build_macro_legend_publication(colour_scale, day):
+
+    template_start = """
+    {% macro html(this, kwargs) %}
+
+    <!doctype html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+    $(document).ready(function(){
+        $("#hide").click(function(){
+            if ($("#hide").html() == "Hide"){
+                $("#hide").html('Show');
+                $("p").hide();
+                $("li").hide();
+                $("#maplegendtitle").hide();
+            }
+            else{
+                $("#hide").html('Hide');
+                $("p").show();
+                $("li").show();
+                $("#maplegendtitle").show();
+            }
+        });
+    });
+    </script>
+    </head>
+    <body>
+
+
+    <div id='maplegend' class='maplegend'
+        style='position: absolute; z-index:9999; border:2px solid grey; background-color:rgba(255, 255, 255, 0.8);
+        border-radius:6px; padding: 10px; font-size:14px; right: 10px; bottom: 20px;'>
+
+    <div id='maplegendtitle' class='legend-title'>Proportion Scheduled</div>
+    <div class='legend-scale'>
+    <ul class='legend-labels'>
+    """
+
+    template_end = """
+        <button id="hide">Hide</button>
+    </ul>
+    </div>
+    </div>
+
+    </body>
+    </html>
+
+    <style type='text/css'>
+    .maplegend .legend-title {
+        text-align: left;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 90%;
+        }
+    .maplegend .legend-scale ul {
+        margin: 0;
+        margin-bottom: 5px;
+        padding: 0;
+        float: left;
+        list-style: none;
+        }
+    .maplegend .legend-scale ul li {
+        font-size: 80%;
+        list-style: none;
+        margin-left: 0;
+        line-height: 18px;
+        margin-bottom: 2px;
+        }
+    .maplegend ul.legend-labels li span {
+        display: block;
+        float: left;
+        height: 16px;
+        width: 30px;
+        margin-right: 5px;
+        margin-left: 0;
+        border: 1px solid #999;
+        }
+    .maplegend .legend-source {
+        font-size: 80%;
+        color: #777;
+        clear: both;
+        }
+    .maplegend a {
+        color: #777;
+        }
+    </style>
+    {% endmacro %}"""
+
+    template_middle = build_template_middle_publication(colour_scale, day)
+
+    template = template_start + template_middle + template_end
+    macro = MacroElement()
+    macro._template = Template(template)
+    return macro
+
+
+def add_singleday_display_date(m, singleday_date):
+
+    build_date_filepath = os.path.join(
+        here(), "src", "images", "build_singleday_text.png"
+    )
+
+    W, H = (200, 200)
+    im = Image.new("RGBA", (W, H))
+    draw = ImageDraw.Draw(im)
+    msg = "Displaying data for {}".format(singleday_date.strftime("%Y-%m-%d"))
+    fnt = ImageFont.truetype("/Library/Fonts/Arial.ttf", 14)
+    _, _, w, h = fnt.getbbox(msg)
+    draw.text((0, 0), msg, font=fnt, fill=(0, 0, 0))
+    im.crop((0, 0, w, h)).save(build_date_filepath, "PNG")
+
+    with open(build_date_filepath, "rb") as lf:
+        # open in binary mode, read bytes, encode, decode obtained bytes as utf-8 string
+        b64_content = base64.b64encode(lf.read()).decode("utf-8")
+
+    FloatImage(
+        "data:image/png;base64,{}".format(b64_content), bottom=2.5, left=1
+    ).add_to(m)
+
+    return m
