@@ -4,14 +4,14 @@ This code was created as part of [this Data Science Campus project](https://data
 on visualising GB rail network planned disruptions.
 
 Rail services can be affected by temporary factors such as unseasonably hot weather, industrial action and engineering works.  While truly unexpected events
-cannot of course be predicted, we can use readliy availiable rail scheduling data to visualise the impact of known cancellations and reschedulings on the number
-of movements that would be expected through stations otherwise.
+cannot of course be predicted, we can use readliy available rail scheduling data to visualise the impact of known cancellations and rescheduling on the number
+of movements that would 'normally' be expected through stations.
 
 To understand the extent of reductions in services on a given day, we look at any revisions to the daily schedules,
 which could include cancellations, additions and amendments.
 For every station, we visualised the latest planned service level as a proportion of the originally timetabled service levels.
 
-Data have been obtained from the Rail Delivery Group via a daily feed, which is available for reuse. Data are made available
+Data have been obtained from the Rail Delivery Group via a daily feed which is available for reuse. Data are made available
 to us overnight each day, from which we generate the visuals.
 
 ![Visualisation of percent of normally timetabled services in GB that are running as expected](src/images/full_uk_disruption_summary_20220901_GB.png)
@@ -111,8 +111,8 @@ python run_publications.py
 
 ## Running steps independently
 
-#### Request ATOC Data
-First, to request all recent ATOC data:
+#### Request ATCO.CIF Data
+First, to request all recent ATCO.CIF data:
 
 ```shell
 python src/fetch_feeds.py <feed_type> <target_folder>
@@ -132,13 +132,13 @@ python src/build_timetable.py <zip_name> <data_directory> <output_directory>
 ```
 
 The Arguments:
-* `<zip_file_name>` is the name of the ATOC zip file to work on (include.zip file extension).
+* `<zip_file_name>` is the name of the ATCO.CIF zip file to work on (include.zip file extension).
 * `<data_directory>` is the directory containing that file.
 * `<output_directory>` is the directory to save results to.
 
 Two optional parameters:
-* `--dump_date`, which is a string in DDMMYYYY format format corresponding to the day in which the ATOC zip file was "dumped". If this is not provided,
-the default assumption is the ATOC zip file was "dumped" on the current day of the run call.
+* `--dump_date`, which is a string in DDMMYYYY format format corresponding to the day in which the ATCO.CIF zip file was "dumped". If this is not provided,
+the default assumption is the ATCO.CIF zip file was "dumped" on the current day of the run call.
 * `--start_date`, which is a string in DDMMYYY format corresponding to the day from which the timetable will be built.  Default is the current date.
 * `--no_days`, the number of days including start date for which to create results running in to the future.
 
@@ -148,7 +148,7 @@ An example call using these optional parameters could be:
 python src/build_timetable.py <zip_file_name> <data_directory> <output_directory> --dump_date 01082022 --date 02082022
 ```
 
-Which would use `<zip_file_name>`, take the ATOC data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
+Which would use `<zip_file_name>`, take the ATCO.CIF data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
 
 #### Make Visualisations
 
