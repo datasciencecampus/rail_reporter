@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script exists to aid automation with crontab
+
 # Add this to PATH, makes source, direnv available
 export PATH="/usr/local/bin:$PATH"
 

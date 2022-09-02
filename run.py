@@ -6,7 +6,6 @@ import logging
 from datetime import datetime
 
 from src.utils import breakout_DTD_filename
-from src.automail import email_rail_report
 
 
 LOG_DIR = os.getenv("DIR_LOG")
@@ -27,13 +26,7 @@ def main():
         prog = json.load(f)
 
         if not prog["new_files"]:
-            logger.info("No new feed data has been found, " + "reporting and exiting.")
-            content = (
-                "No new feed data detected this morning, "
-                + "this may be a temporary delay in the data source, "
-                + "we will try again this afternoon."
-            )
-            email_rail_report(content=content)
+            logger.info("No new feed data has been found, exiting.")
             return None
 
     # Find all ATOC zips for FULL data
@@ -81,9 +74,6 @@ def main():
             file_list=", ".join(out_files), archive=archive_name
         )
     )
-
-    # Mail the zip file to the recipient list configured in .secrets
-    email_rail_report(attachment_filepaths=[os.path.join(OUT_FOLDER, archive_name)])
 
 
 if __name__ == "__main__":
