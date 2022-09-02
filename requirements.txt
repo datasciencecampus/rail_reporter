@@ -12,7 +12,6 @@ pyprojroot
 peartree
 paramiko
 click
-yagmail
 folium
 pillow
 pybase64

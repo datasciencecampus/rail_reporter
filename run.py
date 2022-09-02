@@ -1,12 +1,10 @@
 import os
 import json
-import zipfile
 import logging
 
 from datetime import datetime
 
 from src.utils import breakout_DTD_filename
-from src.automail import email_rail_report
 
 
 LOG_DIR = os.getenv("DIR_LOG")
@@ -27,13 +25,7 @@ def main():
         prog = json.load(f)
 
         if not prog["new_files"]:
-            logger.info("No new feed data has been found, " + "reporting and exiting.")
-            content = (
-                "No new feed data detected this morning, "
-                + "this may be a temporary delay in the data source, "
-                + "we will try again this afternoon."
-            )
-            email_rail_report(content=content)
+            logger.info("No new feed data has been found, exiting.")
             return None
 
     # Find all ATOC zips for FULL data
@@ -58,32 +50,6 @@ def main():
 
     # Produce visualisation from those statistics
     os.system("python ./src/make_visualisations.py --no_days 30")
-
-    # Bundle outputs to zip, selecting all csv's, html's dated today
-    OUT_FOLDER = os.path.join(OUT_DIR, datetime.now().strftime("%Y%m%d"))
-
-    out_files = [
-        file
-        for file in os.listdir(OUT_FOLDER)
-        if ((".csv" in file) | (".html" in file) | (".png" in file))
-        & (datetime.now().strftime("%Y%m%d") in file)
-    ]
-
-    archive_name = "rail_status_{date}.zip".format(date=str(datetime.now().date()))
-
-    with zipfile.ZipFile(os.path.join(OUT_FOLDER, archive_name), mode="w") as archive:
-        for file in out_files:
-            file_path = os.path.join(OUT_FOLDER, file)
-            archive.write(file_path, arcname=file, compress_type=zipfile.ZIP_DEFLATED)
-
-    logger.info(
-        "files {file_list} zipped to {archive}".format(
-            file_list=", ".join(out_files), archive=archive_name
-        )
-    )
-
-    # Mail the zip file to the recipient list configured in .secrets
-    email_rail_report(attachment_filepaths=[os.path.join(OUT_FOLDER, archive_name)])
 
 
 if __name__ == "__main__":
