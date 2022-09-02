@@ -166,7 +166,7 @@ The automailing functions can be run as a standalone script that'll send a test
 attachment to recipients in `.secrets`:
 
 ```shell
-python ./src/automail.py
+python src/automail.py
 ```
 
 ---
