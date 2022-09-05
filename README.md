@@ -15,6 +15,22 @@ Data have been obtained from the Rail Delivery Group via a daily feed which is a
 to us overnight each day, from which we generate the visuals.
 
 ![Visualisation of percent of normally timetabled services in GB that are running as expected](src/images/full_uk_disruption_summary_20220901_GB.png)
+** Above, a shot of the output of the process, interactive visualisations (HTML) of expected scheduled movement levels. **
+
+```mermaid
+graph LR
+    A["Retrieve Rail Delivery<br>Group Data Feed"] --> B("Retrieve data<br>(fetch_feeds.py)")
+    B --> C("Build daily timetable<br>(build_timetable.py)")
+    C --> D("Visualise daily timetable<br>(make_visualisations.py)")
+    D --> E{"Generate<br>publication<br>visuals?"}
+    E --> |Yes| F("Build publication visuals<br>(make_publications.py)")
+    E --> |No| G{"Distribute<br>results?"}
+    F --> G
+    G --> |Yes| H("Email results<br>(automail.py - prob branch)")
+    G --> |No| I(End)
+    H --> I
+```
+** Above, the pipeline for creating these visualisations **
 
 ---
 
