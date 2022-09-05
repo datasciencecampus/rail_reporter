@@ -15,7 +15,7 @@ Data have been obtained from the Rail Delivery Group via a daily feed which is a
 to us overnight each day, from which we generate the visuals.
 
 ![Visualisation of percent of normally timetabled services in GB that are running as expected](src/images/full_uk_disruption_summary_20220901_GB.png)
-** Above, a shot of the output of the process, interactive visualisations (HTML) of expected scheduled movement levels. **
+*Above, a shot of the output of the process, interactive visualisations (HTML) of expected scheduled movement levels.*
 
 ```mermaid
 graph LR
@@ -30,7 +30,7 @@ graph LR
     G --> |No| I(End)
     H --> I
 ```
-** Above, the pipeline for creating these visualisations **
+*Above, the pipeline for creating these visualisations*
 
 ---
 
