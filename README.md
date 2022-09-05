@@ -30,7 +30,7 @@ graph LR
     G --> |No| I(End)
     H --> I
 ```
-*Above, the pipeline for creating these visualisations*
+*Above, the pipeline for creating these visualisations.*
 
 ---
 
