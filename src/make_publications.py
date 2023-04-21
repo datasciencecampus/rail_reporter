@@ -46,7 +46,18 @@ def main(
     add_geocoder: bool,
 ):
     """
-    Handles building timeseries and static visualisations
+    Wraps production of timeseries data, and static visualisations for reports.
+
+    Args:
+        working_directory (str): Optional directory to build and save the map
+        csv_input_filename (str): Data to plot
+        start_date (str): Beginning date of timeseries to plot
+        end_date (str): End date of timeseries to plot
+        scale_markers_on (str): The variable by which to scale point data
+        measure_control (bool): Optional folium tool for measuring distance
+        mini_map (bool): Optional minimap
+        full_screen (bool): Optional fullscreen button
+        add_geocoder (bool): Optional location search tool
     """
     logger = logging.getLogger(__name__)
 
