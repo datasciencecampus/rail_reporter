@@ -311,26 +311,6 @@ def create_perm_and_new_df(timetable):  # noqa: C901
     return calendar_df, cancelled_df
 
 
-# def filter_to_date_and_time(
-#     journey_rows_df,
-#     date,
-#     weekday,
-#     # time_slice=(["0000", "2359"]),
-# ):
-
-#     journey_rows_df[["Valid_from", "Valid_to"]] = journey_rows_df[
-#         ["Valid_from", "Valid_to"]
-#     ].astype("int64")
-
-#     return journey_rows_df[
-#         (journey_rows_df["Valid_from"] <= date)
-#         & (journey_rows_df["Valid_to"] >= date)
-#         # & (journey_rows_df["Time"] >= time_slice[0])
-#         # & (journey_rows_df["Time"] <= time_slice[1])
-#         & (journey_rows_df[weekday] == "1")
-#     ]
-
-
 def find_station_tiplocs(stops_file_path):
     # assumes NAPTAN csv is present (https://beta-naptan.dft.gov.uk/download/national)
     tiploc_coords = pd.read_csv(stops_file_path, low_memory=False)

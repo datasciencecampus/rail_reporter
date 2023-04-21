@@ -59,13 +59,6 @@ def main(
     """
     logger = logging.getLogger(__name__)
 
-    # if zip_name is None:
-    #     zip_name = get_most_recent_file(data_directory)
-    #     logger.info(
-    #         f'Setting `zip_name` to "{zip_name}" (latest file) automatically'
-    #         " since the optional argument was not set."
-    #     )
-
     # set to today if no dump_date is provided
     if dump_date is None:
         dump_date = datetime.now().date().strftime("%d%m%Y")
