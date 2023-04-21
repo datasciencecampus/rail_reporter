@@ -21,6 +21,7 @@ def main(feed_type: str, data_directory: str):
     """
     logger = logging.getLogger(__name__)
     logger.info(f"Fetching {feed_type}")
+    logger.info(os.getenv("RAIL_FEED_HOST"))
 
     # Open a transport
     transport = paramiko.Transport(
@@ -38,6 +39,8 @@ def main(feed_type: str, data_directory: str):
 
     # Check what files already exist
     logger.info("Checking for existing files")
+    if not os.path.exists(os.getenv("DIR_DATA_EXTERNAL_ATOC")):
+        os.makedirs(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
     local_rail_files = [
         file
         for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
