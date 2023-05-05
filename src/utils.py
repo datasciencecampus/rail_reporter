@@ -92,7 +92,7 @@ def download_big_file(
 
 
 def breakout_DTD_filename(filename: str):
-    """Pulls metadata out of a DTD rail data filename"""
+    """ Pulls metadata out of a DTD rail data filename. """
     return {
         "name": filename,
         "number": int(re.sub(r"[^0-9]", "", filename.split(".")[0])),
@@ -102,14 +102,16 @@ def breakout_DTD_filename(filename: str):
 
 
 def unpack_atoc_data(folder_path, zip_name, dump_date):
-    """Unpacks atoc zip file"""
-
+    """ Unpacks atoc zip file. """
     with ZipFile(os.path.join(folder_path, zip_name), "r") as zip:
         zip.extractall(os.path.join(folder_path, f"atoc_{dump_date}"))
 
 
 def cut_mca_to_size(folder_path, zip_name, dump_date):
-
+    """
+    Reads and formats the .MCA files, detecting the first information row and
+    so skipping metadata at the top of the file.
+    """
     mca_file_name = zip_name.strip(".ZIP") + ".MCA"
     mca_file_path = os.path.join(folder_path, f"atoc_{dump_date}", mca_file_name)
 
@@ -128,7 +130,13 @@ def cut_mca_to_size(folder_path, zip_name, dump_date):
 
 
 def create_perm_and_new_df(timetable):  # noqa: C901
-
+    """
+    Parses the ATOC timetable format, which has line-by-line descriptions of
+    dates and times of services, into long format DataFrames with row entries
+    for each service stop.  Creates one DF of originally scheduled services,
+    and a separate one of planned cancellations that are intended to overlay
+    the scheduled.
+    """
     ind_movts = []
     cancelled_movts = []
 
@@ -311,28 +319,12 @@ def create_perm_and_new_df(timetable):  # noqa: C901
     return calendar_df, cancelled_df
 
 
-# def filter_to_date_and_time(
-#     journey_rows_df,
-#     date,
-#     weekday,
-#     # time_slice=(["0000", "2359"]),
-# ):
-
-#     journey_rows_df[["Valid_from", "Valid_to"]] = journey_rows_df[
-#         ["Valid_from", "Valid_to"]
-#     ].astype("int64")
-
-#     return journey_rows_df[
-#         (journey_rows_df["Valid_from"] <= date)
-#         & (journey_rows_df["Valid_to"] >= date)
-#         # & (journey_rows_df["Time"] >= time_slice[0])
-#         # & (journey_rows_df["Time"] <= time_slice[1])
-#         & (journey_rows_df[weekday] == "1")
-#     ]
-
-
 def find_station_tiplocs(stops_file_path):
-    # assumes NAPTAN csv is present (https://beta-naptan.dft.gov.uk/download/national)
+    """
+    Downloads a file the DfT maintains of train stop locations and names.
+    The url may change in future (note "beta" in the url).
+    """
+    # assumes NAPTAN csv is present (https://beta-naptan.dft.gov.uk/Download/National/csv)
     tiploc_coords = pd.read_csv(stops_file_path, low_memory=False)
     tiploc_coords = tiploc_coords[
         (tiploc_coords["Status"] == "active") & (tiploc_coords["StopType"] == "RLY")
@@ -362,7 +354,11 @@ def find_station_tiplocs(stops_file_path):
 
 
 def filter_to_date(journey_rows_df, date, cancellations=False):
-
+    """
+    Derives a dataframe of services for a specified date, using the
+    DfT definition of a 'day' (to 2 am), outputting a simple long-format
+    dataframe with a row for each scheduled service stop.
+    """
     journey_rows_df[["Valid_from", "Valid_to"]] = journey_rows_df[
         ["Valid_from", "Valid_to"]
     ].astype("int64")
@@ -413,7 +409,11 @@ def filter_to_date(journey_rows_df, date, cancellations=False):
 
 
 def filter_to_date_cancellations(calendar_df_filt_by_dft, cancelled_df, date):
-
+    """
+    Derives a dataframe of cancelled services for a specified date, using the
+    DfT definition of a 'day' (to 2 am), outputting a simple long-format
+    dataframe with a row for each scheduled service stop.
+    """
     # lookahead by one day
     d1 = datetime.strptime(str(date), "%y%m%d").date()
     d2 = d1 + timedelta(1)
@@ -445,6 +445,10 @@ def filter_to_date_cancellations(calendar_df_filt_by_dft, cancelled_df, date):
 def filter_to_dft_time(
     today_rows_df,
 ):
+    """
+    Identifies rows with a Time that falls within a Department for Transport
+    'day', which for logistic reasons runs until 2am...
+    """
 
     # id journeys starting between 0200 and 2359
     core_start = list(
@@ -490,7 +494,12 @@ def add_folium_times(s: pd.Series, times_prop_name: str) -> list:
 
 
 def scale_col(df, col_name, min_val=2, max_val=12):
-
+    """
+    Utility, to scale a series of values to:
+    min_val >= sqrt(val) <= max_val
+    For determining the radius with which to plot data points, in pixels,
+    dependent on values.
+    """
     srq_root_col = np.sqrt(df[col_name])
     col_min = srq_root_col.min()
     col_max = srq_root_col.max()
@@ -501,6 +510,9 @@ def scale_col(df, col_name, min_val=2, max_val=12):
 
 
 def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
+    """
+    Uses HTML to crate a more informative folium tooltip for plotted points.
+    """
     # color of columns
     left_col_color = "#0F8243"
     right_col_color = "#EAEAEA"
@@ -572,7 +584,9 @@ def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
 
 
 def get_colour(val, colour_scale: list = None):
-
+    """
+    Manual specification of a colour scale for plotting continuous values.
+    """
     if colour_scale is None:
         colour_scale = [
             "#000000",
@@ -606,7 +620,9 @@ def get_colour(val, colour_scale: list = None):
 
 
 def build_legend_macro():  # noqa: E501
-
+    """
+    Manually builds our map legend for folium using HTML and JavaScript.
+    """
     template = """
     {% macro html(this, kwargs) %}
 
@@ -708,7 +724,10 @@ def build_legend_macro():  # noqa: E501
 
 
 def build_features(gp_df, colour_scale=None):
-
+    """
+    Utility function creates a geojson features structure out of a
+    geoPandas DataFrame.
+    """
     features = [
         {
             "type": "Feature",
@@ -752,6 +771,10 @@ def build_base_map(
     publication: bool = False,
     default_view: str = "CartoDB",
 ):
+    """
+    Wraps the combining of various standard folium map components/plugin to
+    create the base map on which we plot our trains data.
+    """
 
     if not publication:
         m = folium.Map(
@@ -808,8 +831,9 @@ def build_base_map(
 
 
 def add_timestamped_geojson(m, features):
-
-    # add TimestampGeoJson to the area
+    """
+    Add TimestampGeoJson to the folium map, constructed from a features dict.
+    """
     TimestampedGeoJson(
         {
             "type": "FeatureCollection",
@@ -830,6 +854,9 @@ def add_timestamped_geojson(m, features):
 
 
 def add_logo(m):
+    """
+    Adds our awesome logo to the folium map.
+    """
 
     logo_filepath = os.path.join(here(), "src", "images", "logo_reduced.png")
 
@@ -845,6 +872,10 @@ def add_logo(m):
 
 
 def add_build_date(m):
+    """
+    Adds a build date watermark/floating image to the folium map, intention
+    is to indicate how up-to-date the data is.
+    """
 
     build_date_filepath = os.path.join(here(), "src", "images", "build_text.png")
 
@@ -869,6 +900,11 @@ def add_build_date(m):
 
 
 def build_static_visual(folder_path, date, place, m):
+    """
+    Workaround; generates a static map image from our interactive folium map
+    using firefox and geckodriver in the background to open the HTML that
+    contains it.
+    """
 
     png_filename = f"full_uk_disruption_summary_{date}_{place}.png"
 
@@ -891,6 +927,10 @@ def build_static_visual(folder_path, date, place, m):
 
 
 def build_template_middle_publication(colour_scale, day=None):
+    """
+    Used by `build_macro_legend_publication` below, to manually build a legend
+    for our folium map using HTML + JavaScript.
+    """
 
     if day is None:
         template_middle = """
@@ -957,7 +997,9 @@ def build_template_middle_publication(colour_scale, day=None):
 
 
 def build_macro_legend_publication(colour_scale, day):
-
+    """
+    Manually builds our map legend for folium using HTML and JavaScript.
+    """
     template_start = """
     {% macro html(this, kwargs) %}
 
@@ -1060,6 +1102,9 @@ def build_macro_legend_publication(colour_scale, day):
 
 
 def add_singleday_display_date(m, singleday_date):
+    """
+    Adds a floating date overlay to our folium map.
+    """
 
     build_date_filepath = os.path.join(
         here(), "src", "images", "build_singleday_text.png"

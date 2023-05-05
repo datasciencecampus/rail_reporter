@@ -1,7 +1,23 @@
+<img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
+
 # Rail Reporter
 
-This code was created as part of [this Data Science Campus project](https://datasciencecampus.ons.gov.uk/visualising-rail-schedules-using-open-data/)
-on visualising GB rail network planned disruptions.
+## Code State
+
+**Ad-hoc analysis**
+
+**OSX only**
+
+**Peer-reviewed**
+
+**No unittests**
+
+**Depends on external API's**
+
+## Introduction
+
+**This code was created as part of [this Data Science Campus project](https://datasciencecampus.ons.gov.uk/visualising-rail-schedules-using-open-data/)
+on visualising GB rail network planned disruptions.**
 
 Rail services can be affected by temporary factors such as unseasonably hot weather, industrial action and engineering works.  While truly unexpected events
 cannot of course be predicted, we can use readliy available rail scheduling data to visualise the impact of known cancellations and rescheduling on the number
@@ -15,7 +31,7 @@ Data have been obtained from the Rail Delivery Group via a daily feed which is a
 to us overnight each day, from which we generate the visuals.
 
 ![Visualisation of percent of normally timetabled services in GB that are running as expected](src/images/full_uk_disruption_summary_20220901_GB.png)
-*Above, a shot of the output of the process, interactive visualisations (HTML) of expected scheduled movement levels.*
+*Above, an image of the output of the process, interactive visualisations (HTML) of expected scheduled movement levels.*
 
 ```mermaid
 graph LR
@@ -36,7 +52,8 @@ graph LR
 
 ## Setup
 
-We expect our code to work on OSX and Linux systems.
+This code has been developed on OSX systems, as we are releasing it for transparency and for other developers
+we have not attempted to make it compatible with other platforms.
 
 ### Get access to data
 
@@ -69,14 +86,26 @@ brew install firefox     # Used to create static images from html
 brew install geckodriver # Used to create static images from html
 ```
 
-Note: you may need to add `eval "$(direnv hook zsh)"` to the ~/.zshrc file during an initial setup.
+Note: you may need to add a line of code to the configuration file specific to your choice of shell in order to have these arguments executed when you launch your terminal:
+
+*For ZSH:*
+```shell
+eval "$(direnv hook zsh)" >> ~/.zshrc
+```
+
+*Or for BASH:*
+
+```shell
+eval "$(direnv hook bash)" >> ~/.bashrc
+```
+
 
 ### Secrets (logins etc)
 
-You will need to create a .secrets file in the project root directory with
+You will need to create a **.secrets** file in the project root directory with
 the following information:
 
-```
+```shell
 # For configuring data ingest (connection details for SFTP server)
 export RAIL_FEED_USER=<DTD data feed username>
 export RAIL_FEED_PASS=<DTD data feed password>
@@ -84,9 +113,31 @@ export RAIL_FEED_HOST=<DTD data feed remote server host name/endpoint>
 export RAIL_FEED_PORT=<DTD data feed port (usually 22, and not secret)>
 ```
 
+*Note that quotation marks are not required for strings in this file.*
+
+### Pre-commit actions
+This repository contains a configuration of [pre-commit hooks](https://pre-commit.com/). If approaching this project as
+a developer, you are encouraged to install and enable `pre-commits` by running the following in your shell:
+
+   1. Install `pre-commit`:
+
+      ```
+      pip install pre-commit
+      ```
+   2. Enable `pre-commit`:
+
+      ```
+      pre-commit install
+      ```
+Once pre-commits are activated, whenever you commit to this repository a series of checks will be executed.
+The pre-commits include checking for security keys, large files and unresolved merge conflict headers.
+The use of active pre-commits are highly encouraged.
+
+**NOTE:** Pre-commit hooks execute Python, so it expects a working Python build.
+
 ---
 
-## Run pipeline
+## Usage
 
 The intention is to integrate all steps into a process with one trigger script.
 Currently only fetching rail data is fully implemented.
@@ -104,7 +155,7 @@ For a useful tool for composing cron schedules/instructions [see here](https://c
 
 - our cron schedule entry: `0 5 * * * cd <project_folder> && ./run.sh`
 
-## Run off publication
+### Run off publication
 
 Not frequently used, a wrapper script that simply regenerates the publication
 visualisations used in our blogs with the latest data, should they be needed.
@@ -116,9 +167,7 @@ running over specific time windows or with past data.
 python run_publications.py
 ```
 
----
-
-## Running steps independently
+### Running steps independently
 
 #### Request ATCO.CIF Data
 First, to request all recent ATCO.CIF data:
@@ -157,11 +206,11 @@ An example call using these optional parameters could be:
 python src/build_timetable.py <zip_file_name> <data_directory> <output_directory> --dump_date 01082022 --date 02082022
 ```
 
-Which would use `<zip_file_name>`, take the ATCO.CIF data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
+which would use `<zip_file_name>`, take the ATCO.CIF data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
 
 #### Make Visualisations
 
-Then, can make visualisations by running:
+Then, you can make visualisations by running:
 ```shell
 python src/make_visualisations.py
 ```
@@ -197,3 +246,18 @@ Numerous optional parameters:
 * `--add_geocoder`, a flag to add geocoder object (search for place). Default behaviour will add the geocoder without this flag.
 
 ---
+
+# Data Science Campus
+At the [Data Science Campus](https://datasciencecampus.ons.gov.uk/about-us/) we apply data science, and build skills, for public good across the UK and internationally. Get in touch with the Campus at [datasciencecampus@ons.gov.uk](datasciencecampus@ons.gov.uk).
+
+# License
+
+<!-- Unless stated otherwise, the codebase is released under [the MIT Licence][mit]. -->
+
+The code, unless otherwise stated, is released under [the MIT Licence][mit].
+
+The documentation for this work is subject to [© Crown copyright][copyright] and is available under the terms of the [Open Government 3.0][ogl] licence.
+
+[mit]: LICENCE
+[copyright]: http://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/
+[ogl]: http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/

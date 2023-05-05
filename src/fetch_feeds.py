@@ -10,7 +10,7 @@ from datetime import datetime
 @click.command()
 @click.argument("feed_type")
 @click.argument("data_directory")
-def main(feed_type: str, data_directory: str):
+def main(feed_type: str, data_directory: str, latest_only=True):
     """
     Handles connecting to DTD SFTP rail data feed, and fetching latest, or all
     available.
@@ -21,6 +21,7 @@ def main(feed_type: str, data_directory: str):
     """
     logger = logging.getLogger(__name__)
     logger.info(f"Fetching {feed_type}")
+    logger.info(os.getenv("RAIL_FEED_HOST"))
 
     # Open a transport
     transport = paramiko.Transport(
@@ -36,8 +37,18 @@ def main(feed_type: str, data_directory: str):
     # Detect remote files available
     remote_rail_files = sftp.listdir(f"./{feed_type}")
 
+    if latest_only:
+        # Filter to FULL data format only (rather than CHANGE format)
+        remote_rail_files = [x for x in remote_rail_files if x[:5]=="RJTTF"]
+        
+        # Sort to id most recent data zip folder only
+        remote_rail_files.sort()
+        remote_rail_files = [remote_rail_files[-1]]
+
     # Check what files already exist
     logger.info("Checking for existing files")
+    if not os.path.exists(os.getenv("DIR_DATA_EXTERNAL_ATOC")):
+        os.makedirs(os.getenv("DIR_DATA_EXTERNAL_ATOC"))
     local_rail_files = [
         file
         for file in os.listdir(os.getenv("DIR_DATA_EXTERNAL_ATOC"))

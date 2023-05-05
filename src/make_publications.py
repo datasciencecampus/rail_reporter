@@ -8,11 +8,8 @@ import pandas as pd
 from pyprojroot import here
 
 from utils import (
-    # add_build_date,
     add_timestamped_geojson,
     add_folium_times,
-    # add_logo,
-    # add_singleday_display_date,
     build_base_map,
     build_features,
     build_macro_legend_publication,
@@ -49,7 +46,18 @@ def main(
     add_geocoder: bool,
 ):
     """
-    Handles building timeseries and static visualisations
+    Wraps production of timeseries data, and static visualisations for reports.
+
+    Args:
+        working_directory (str): Optional directory to build and save the map
+        csv_input_filename (str): Data to plot
+        start_date (str): Beginning date of timeseries to plot
+        end_date (str): End date of timeseries to plot
+        scale_markers_on (str): The variable by which to scale point data
+        measure_control (bool): Optional folium tool for measuring distance
+        mini_map (bool): Optional minimap
+        full_screen (bool): Optional fullscreen button
+        add_geocoder (bool): Optional location search tool
     """
     logger = logging.getLogger(__name__)
 
@@ -166,12 +174,6 @@ def main(
     m = add_timestamped_geojson(m, features)
     logger.info("Added TimestampedGeoJson object to map.")
 
-    # m = add_logo(m)
-    # logger.info("Added logo to map.")
-
-    # m = add_build_date(m)
-    # logger.info("Added build date to map.")
-
     if single_day:
         macro = build_macro_legend_publication(colour_scale, start_date)
     else:
@@ -191,8 +193,6 @@ def main(
         logger.info(f"Timeseries visual saved {vis_filepath}")
     else:
         logger.info("Saving single day visual...")
-
-        # m = add_singleday_display_date(m, start_date)
 
         vis_filepath = os.path.join(
             working_directory,
