@@ -86,20 +86,34 @@ brew install firefox     # Used to create static images from html
 brew install geckodriver # Used to create static images from html
 ```
 
-Note: you may need to add `eval "$(direnv hook zsh)"` to the ~/.zshrc file during an initial setup.
+Note: you may need to add a line of code to the configuration file specific to your choice of shell in order to have these arguments executed when you launch your terminal:
+
+*For ZSH:*
+```shell
+eval "$(direnv hook zsh)" >> ~/.zshrc
+```
+
+*Or for BASH:*
+
+```shell
+eval "$(direnv hook bash)" >> ~/.bashrc
+```
+
 
 ### Secrets (logins etc)
 
-You will need to create a .secrets file in the project root directory with
+You will need to create a **.secrets** file in the project root directory with
 the following information:
 
-```
+```shell
 # For configuring data ingest (connection details for SFTP server)
 export RAIL_FEED_USER=<DTD data feed username>
 export RAIL_FEED_PASS=<DTD data feed password>
 export RAIL_FEED_HOST=<DTD data feed remote server host name/endpoint>
 export RAIL_FEED_PORT=<DTD data feed port (usually 22, and not secret)>
 ```
+
+*Note that quotation marks are not required for strings in this file.*
 
 ### Pre-commit actions
 This repository contains a configuration of [pre-commit hooks](https://pre-commit.com/). If approaching this project as
@@ -192,11 +206,11 @@ An example call using these optional parameters could be:
 python src/build_timetable.py <zip_file_name> <data_directory> <output_directory> --dump_date 01082022 --date 02082022
 ```
 
-Which would use `<zip_file_name>`, take the ATCO.CIF data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
+which would use `<zip_file_name>`, take the ATCO.CIF data "dump" date as 01/Aug/2022 and filter it to 02/Aug/2022.
 
 #### Make Visualisations
 
-Then, can make visualisations by running:
+Then, you can make visualisations by running:
 ```shell
 python src/make_visualisations.py
 ```
