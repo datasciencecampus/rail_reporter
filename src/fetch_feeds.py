@@ -39,8 +39,8 @@ def main(feed_type: str, data_directory: str, latest_only=True):
 
     if latest_only:
         # Filter to FULL data format only (rather than CHANGE format)
-        remote_rail_files = [x for x in remote_rail_files if x[:5]=="RJTTF"]
-        
+        remote_rail_files = [x for x in remote_rail_files if x[:5] == "RJTTF"]
+
         # Sort to id most recent data zip folder only
         remote_rail_files.sort()
         remote_rail_files = [remote_rail_files[-1]]

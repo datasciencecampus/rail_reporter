@@ -92,7 +92,7 @@ def download_big_file(
 
 
 def breakout_DTD_filename(filename: str):
-    """ Pulls metadata out of a DTD rail data filename. """
+    """Pulls metadata out of a DTD rail data filename."""
     return {
         "name": filename,
         "number": int(re.sub(r"[^0-9]", "", filename.split(".")[0])),
@@ -102,7 +102,7 @@ def breakout_DTD_filename(filename: str):
 
 
 def unpack_atoc_data(folder_path, zip_name, dump_date):
-    """ Unpacks atoc zip file. """
+    """Unpacks atoc zip file."""
     with ZipFile(os.path.join(folder_path, zip_name), "r") as zip:
         zip.extractall(os.path.join(folder_path, f"atoc_{dump_date}"))
 
