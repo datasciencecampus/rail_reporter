@@ -1,4 +1,6 @@
-<img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
+<img src="https://shields.io/badge/MacOS--9cf?logo=Apple&style=social", alt="mac-os compatible">
+
+<img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png", alt="ONS & Data Science Campus logos">
 
 # Rail Reporter
 
