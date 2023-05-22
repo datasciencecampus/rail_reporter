@@ -1,4 +1,7 @@
-<img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
+<img src="https://img.shields.io/badge/license-MIT-green" alt="Shared under MIT License"/>
+<img src="https://shields.io/badge/MacOS--9cf?logo=Apple&style=social" alt="mac-os compatible"/>
+<br>
+<img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png" alt="ONS & Data Science Campus logos"/>
 
 # Rail Reporter
 
@@ -31,7 +34,7 @@ Data have been obtained from the Rail Delivery Group via a daily feed which is a
 to us overnight each day, from which we generate the visuals.
 
 ![Visualisation of percent of normally timetabled services in GB that are running as expected](src/images/full_uk_disruption_summary_20220901_GB.png)
-*Above, an image of the output of the process, interactive visualisations (HTML) of expected scheduled movement levels.*
+Above, an image of the output of the process, interactive visualisations (HTML) of expected scheduled movement levels.
 
 ```mermaid
 graph LR
@@ -46,7 +49,7 @@ graph LR
     G --> |No| I(End)
     H --> I
 ```
-*Above, the pipeline for creating these visualisations.*
+Above, the pipeline for creating these visualisations.
 
 ---
 
@@ -88,12 +91,12 @@ brew install geckodriver # Used to create static images from html
 
 Note: you may need to add a line of code to the configuration file specific to your choice of shell in order to have these arguments executed when you launch your terminal:
 
-*For ZSH:*
+For ZSH:
 ```shell
 eval "$(direnv hook zsh)" >> ~/.zshrc
 ```
 
-*Or for BASH:*
+Or for BASH:
 
 ```shell
 eval "$(direnv hook bash)" >> ~/.bashrc
@@ -113,7 +116,7 @@ export RAIL_FEED_HOST=<DTD data feed remote server host name/endpoint>
 export RAIL_FEED_PORT=<DTD data feed port (usually 22, and not secret)>
 ```
 
-*Note that quotation marks are not required for strings in this file.*
+Note that quotation marks are not required for strings in this file.
 
 ### Pre-commit actions
 This repository contains a configuration of [pre-commit hooks](https://pre-commit.com/). If approaching this project as
@@ -248,7 +251,7 @@ Numerous optional parameters:
 ---
 
 # Data Science Campus
-At the [Data Science Campus](https://datasciencecampus.ons.gov.uk/about-us/) we apply data science, and build skills, for public good across the UK and internationally. Get in touch with the Campus at [datasciencecampus@ons.gov.uk](datasciencecampus@ons.gov.uk).
+At the [Data Science Campus](https://datasciencecampus.ons.gov.uk/about-us/) we apply data science, and build skills, for public good across the UK and internationally. Get in touch with the Campus at [datasciencecampus@ons.gov.uk](mailto:datacampus@ons.gov.uk).
 
 # License
 
@@ -258,6 +261,6 @@ The code, unless otherwise stated, is released under [the MIT Licence][mit].
 
 The documentation for this work is subject to [© Crown copyright][copyright] and is available under the terms of the [Open Government 3.0][ogl] licence.
 
-[mit]: LICENCE
+[mit]: LICENSE
 [copyright]: http://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/
 [ogl]: http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
