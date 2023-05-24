@@ -1,0 +1,9 @@
+This repository as a whole is distributed under MIT license (see file
+LICENSE). This repository includes other open source software components.
+The following is a list of these components:
+
+* `src/utils.py` contains a function `build_static_visual` which has been
+derived and refactored from the `folium` `_to_png` method of the `map` class:
+https://github.com/python-visualization/folium/blob/76647fed2c9f279c57825b1fe01
+d34c129089ff8/folium/folium.py#L324-#L356. `folium` is currently released under
+a MIT license, 2013.

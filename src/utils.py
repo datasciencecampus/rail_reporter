@@ -512,6 +512,14 @@ def scale_col(df, col_name, min_val=2, max_val=12):
 def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
     """
     Uses HTML to crate a more informative folium tooltip for plotted points.
+
+    Attribution:
+    The html snippet below was developed and shared initially by 'My Data Talk'
+    in the following towardsdatascience article:
+    https://towardsdatascience.com/folium-map-how-to-create-a-table-style-pop-u
+    p-with-html-code-76903706b88a
+    This snippet has been refactored and modified to suit the desired tooltip
+    goal.
     """
     # color of columns
     left_col_color = "#0F8243"
@@ -622,6 +630,15 @@ def get_colour(val, colour_scale: list = None):
 def build_legend_macro():  # noqa: E501
     """
     Manually builds our map legend for folium using HTML and JavaScript.
+
+    Attribution:
+    This code snippet (legend building and formatting) was derived from work
+    initially performed and shared by ColinTalbert within a Folium git
+    issue:
+    https://github.com/python-visualization/folium/issues/528
+    It is also specifically shared here:
+    https://nbviewer.org/gist/talbertc-usgs/18f8901fc98f109f2b71156cf3ac81cd
+    This work has been adapted to match this usecase.
     """
     template = """
     {% macro html(this, kwargs) %}
@@ -904,6 +921,16 @@ def build_static_visual(folder_path, date, place, m):
     Workaround; generates a static map image from our interactive folium map
     using firefox and geckodriver in the background to open the HTML that
     contains it.
+
+    Attribution:
+    This code snippet is a modified and refactored version of the Folium
+    `_to_png` method of the `map` class. This base method was not fit for
+    purpose in this use case, and has been modified to suit this specific
+    need. The original code snippet can be found here:
+    https://github.com/python-visualization/folium/blob/76647fed2c9f279c57825b1
+    fe01d34c129089ff8/folium/folium.py#L324-#L356
+    Within Folium's main repository:
+    https://github.com/python-visualization/folium
     """
 
     png_filename = f"full_uk_disruption_summary_{date}_{place}.png"
@@ -914,7 +941,6 @@ def build_static_visual(folder_path, date, place, m):
 
     html = m.get_root().render()
     with temp_html_filepath(html) as fname:
-        # We need the tempfile to avoid JS security issues.
         driver.get("file:///{path}".format(path=fname))
         driver.set_window_position(0, 0)
         driver.set_window_size(1680, 1050)
@@ -930,6 +956,15 @@ def build_template_middle_publication(colour_scale, day=None):
     """
     Used by `build_macro_legend_publication` below, to manually build a legend
     for our folium map using HTML + JavaScript.
+
+    Attribution:
+    This code snippet (legend building and formatting) was derived from work
+    initially performed and shared by ColinTalbert within a Folium git
+    issue:
+    https://github.com/python-visualization/folium/issues/528
+    It is also specifically shared here:
+    https://nbviewer.org/gist/talbertc-usgs/18f8901fc98f109f2b71156cf3ac81cd
+    This work has been adapted to match this usecase.
     """
 
     if day is None:
@@ -999,6 +1034,15 @@ def build_template_middle_publication(colour_scale, day=None):
 def build_macro_legend_publication(colour_scale, day):
     """
     Manually builds our map legend for folium using HTML and JavaScript.
+
+    Attribution:
+    This code snippet (legend building and formatting) was derived from work
+    initially performed and shared by ColinTalbert within a Folium git
+    issue:
+    https://github.com/python-visualization/folium/issues/528
+    It is also specifically shared here:
+    https://nbviewer.org/gist/talbertc-usgs/18f8901fc98f109f2b71156cf3ac81cd
+    This work has been adapted to match this usecase.
     """
     template_start = """
     {% macro html(this, kwargs) %}
