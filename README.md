@@ -117,7 +117,8 @@ export RAIL_FEED_HOST=<DTD data feed remote server host name/endpoint>
 export RAIL_FEED_PORT=<DTD data feed port (usually 22, and not secret)>
 ```
 
-Note: quotation marks are generally not required for strings in this file, however you should consider using them for the `RAIL_FEED_PASS` variable if special characters are present.
+Note: quotation marks are generally not required for strings in this file, however you should consider using them for the `RAIL_FEED_PASS` variable if special characters are present. Use single
+quotation marks only to wrap your password string.
 
 ### Pre-commit actions
 This repository contains a configuration of [pre-commit hooks](https://pre-commit.com/). If approaching this project as
