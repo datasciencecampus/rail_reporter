@@ -513,7 +513,7 @@ def write_tooltip(name, time, tiploc, sheduled, timetabled, percentage):
     """
     Uses HTML to crate a more informative folium tooltip for plotted points.
 
-    Acknowledgement:
+    Attribution:
     The html snippet below was developed and shared initially by 'My Data Talk'
     in the following towardsdatascience article:
     https://towardsdatascience.com/folium-map-how-to-create-a-table-style-pop-u
@@ -631,7 +631,7 @@ def build_legend_macro():  # noqa: E501
     """
     Manually builds our map legend for folium using HTML and JavaScript.
 
-    Acknowledgement:
+    Attribution:
     This code snippet (legend building and formatting) was derived from work
     initially performed and shared by ColinTalbert within a Folium git
     issue:
@@ -957,7 +957,7 @@ def build_template_middle_publication(colour_scale, day=None):
     Used by `build_macro_legend_publication` below, to manually build a legend
     for our folium map using HTML + JavaScript.
 
-    Acknowledgement:
+    Attribution:
     This code snippet (legend building and formatting) was derived from work
     initially performed and shared by ColinTalbert within a Folium git
     issue:
@@ -1035,7 +1035,7 @@ def build_macro_legend_publication(colour_scale, day):
     """
     Manually builds our map legend for folium using HTML and JavaScript.
 
-    Acknowledgement:
+    Attribution:
     This code snippet (legend building and formatting) was derived from work
     initially performed and shared by ColinTalbert within a Folium git
     issue:
