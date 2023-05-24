@@ -61,7 +61,8 @@ we have not attempted to make it compatible with other platforms.
 ### Get access to data
 
 The Rail Delivery Group provides access to this data (if approved) through SFTP
-(Secure File Transfer Protocol) servers.  To register for access visit [the web portal](https://dtdportal.atocrsp.org/).
+(Secure File Transfer Protocol) servers.  To register for access visit [the web portal](https://dtdportal.atocrsp.org/), and request access to the 'TIMETABLE_DAILY_FULL' feed.
+
 Information about the data feeds can be found at the Rail Delivery Group's [main website](https://www.raildeliverygroup.com/our-services/rail-data/timetable-data.html).
 Information on any restrictions on the use of such data can also be found here.
 Once access is granted, retrieval of the latest data can be automated as we have done in this project
@@ -116,7 +117,8 @@ export RAIL_FEED_HOST=<DTD data feed remote server host name/endpoint>
 export RAIL_FEED_PORT=<DTD data feed port (usually 22, and not secret)>
 ```
 
-Note that quotation marks are not required for strings in this file.
+Note: quotation marks are generally not required for strings in this file, however you should consider using them for the `RAIL_FEED_PASS` variable if special characters are present. Use single
+quotation marks only to wrap your password string.
 
 ### Pre-commit actions
 This repository contains a configuration of [pre-commit hooks](https://pre-commit.com/). If approaching this project as
